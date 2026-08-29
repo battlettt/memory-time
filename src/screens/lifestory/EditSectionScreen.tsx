@@ -57,8 +57,18 @@ export function EditSectionScreen({ route, navigation }: Props) {
     setSaving(true);
     setError(null);
     try {
+      // photoUri is whatever the picker is showing: a freshly chosen local
+      // file, or the signed URL of the photo already saved. Only the former
+      // needs uploading; the latter keeps the path it already had.
       const isNewLocalPhoto = photoUri && photoUri !== existing?.photo_url;
-      const photoUrl = isNewLocalPhoto ? await uploadPhoto(current.family.id, photoUri!) : photoUri;
+      let photoPath: string | null;
+      if (isNewLocalPhoto) {
+        photoPath = await uploadPhoto(current.family.id, photoUri!);
+      } else if (photoUri) {
+        photoPath = existing?.photo_path ?? null;
+      } else {
+        photoPath = null;
+      }
 
       await upsertLifeStorySection({
         id: existing?.id,
@@ -67,7 +77,7 @@ export function EditSectionScreen({ route, navigation }: Props) {
         sectionKey,
         title: TOPIC_LABELS[sectionKey],
         content: content.trim(),
-        photoUrl,
+        photoPath,
       });
       navigation.goBack();
     } catch (e: any) {

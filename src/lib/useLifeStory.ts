@@ -1,6 +1,19 @@
 import { useCallback, useEffect, useId, useState } from 'react';
 import { supabase } from './supabase';
+import { PHOTO_BUCKET, signedUrlsFor } from './media';
 import type { LifeStorySection, LifeStorySectionKey } from './types';
+
+/** Same read-time signing as memories — see withSignedMedia in useMemories. */
+async function withSignedSectionMedia(rows: LifeStorySection[]): Promise<LifeStorySection[]> {
+  const paths = rows.map((r) => r.photo_path).filter((p): p is string => !!p);
+  if (!paths.length) return rows;
+
+  const photos = await signedUrlsFor(PHOTO_BUCKET, paths);
+  return rows.map((row) => ({
+    ...row,
+    photo_url: row.photo_path ? (photos[row.photo_path] ?? null) : row.photo_url,
+  }));
+}
 
 export function useLifeStory(familyId: string | null) {
   const [sections, setSections] = useState<LifeStorySection[]>([]);
@@ -19,7 +32,7 @@ export function useLifeStory(familyId: string | null) {
       .select('*')
       .eq('family_id', familyId)
       .order('updated_at', { ascending: false });
-    setSections(data ?? []);
+    setSections(await withSignedSectionMedia(data ?? []));
     setLoading(false);
   }, [familyId]);
 
@@ -56,7 +69,7 @@ export async function upsertLifeStorySection(input: {
   sectionKey: LifeStorySectionKey;
   title: string;
   content: string;
-  photoUrl?: string | null;
+  photoPath?: string | null;
 }) {
   const { error } = await supabase.from('life_story_sections').upsert({
     id: input.id,
@@ -64,7 +77,7 @@ export async function upsertLifeStorySection(input: {
     section_key: input.sectionKey,
     title: input.title,
     content: input.content,
-    photo_url: input.photoUrl ?? null,
+    photo_path: input.photoPath ?? null,
     added_by: input.memberId,
     updated_at: new Date().toISOString(),
   });

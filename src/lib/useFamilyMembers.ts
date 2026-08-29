@@ -17,8 +17,10 @@ export function useFamilyMembers(familyId: string | null) {
       .then(({ data }) => setMembers(data ?? []));
   }, [familyId]);
 
-  const nameFor = (memberId: string) =>
-    members.find((m) => m.id === memberId)?.display_name ?? 'A family member';
+  // added_by is nullable now that removing a member nulls it rather than
+  // failing, so a memory can genuinely outlive the person who contributed it.
+  const nameFor = (memberId: string | null) =>
+    (memberId ? members.find((m) => m.id === memberId)?.display_name : null) ?? 'A family member';
 
   return { members, nameFor };
 }

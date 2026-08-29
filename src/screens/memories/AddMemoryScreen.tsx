@@ -46,8 +46,10 @@ export function AddMemoryScreen({ route, navigation }: Props) {
     setSaving(true);
     setError(null);
     try {
-      const photoUrl = photoUri ? await uploadPhoto(current.family.id, photoUri) : null;
-      const voiceUrl = voiceUri ? await uploadVoiceNote(current.family.id, voiceUri) : null;
+      // Uploads return the storage path; the signed URL is minted at read time
+      // so it can never go stale sitting in the database.
+      const photoPath = photoUri ? await uploadPhoto(current.family.id, photoUri) : null;
+      const voicePath = voiceUri ? await uploadVoiceNote(current.family.id, voiceUri) : null;
       await addMemory({
         familyId: current.family.id,
         memberId: current.member.id,
@@ -55,8 +57,8 @@ export function AddMemoryScreen({ route, navigation }: Props) {
         question: question.trim(),
         answer: answer.trim(),
         note: note.trim() || null,
-        photoUrl,
-        voiceUrl,
+        photoPath,
+        voicePath,
       });
       navigation.navigate('MemoriesHome');
     } catch (e: any) {
