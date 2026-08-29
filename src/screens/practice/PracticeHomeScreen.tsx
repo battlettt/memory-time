@@ -13,6 +13,7 @@ import { useMemories } from '../../lib/useMemories';
 import { useFamilySettings } from '../../lib/useFamilySettings';
 import { dueMemories, sessionSelection } from '../../lib/srt';
 import { getOrCreateTodaysPrompt, type DailyPrompt } from '../../lib/dailyPrompt';
+import { tipForToday } from '../../lib/coaching';
 import { colors, iconSize, radius, spacing, typography } from '../../lib/theme';
 import type { PracticeStackParamList, MainTabParamList } from '../../navigation/types';
 
@@ -23,6 +24,7 @@ export function PracticeHomeScreen({ navigation }: Props) {
   const { memories, loading } = useMemories(current?.family.id ?? null);
   const { settings } = useFamilySettings(current?.family.id ?? null);
   const { enter: enterElderMode } = useElderMode();
+  const tip = useMemo(() => tipForToday(), []);
   const due = useMemo(() => dueMemories(memories), [memories]);
 
   // A capped session is one somebody will actually finish. Thirty due
@@ -114,6 +116,15 @@ export function PracticeHomeScreen({ navigation }: Props) {
         </Card>
       )}
 
+      {/* One line, not a lecture. Families get a diagnosis and almost no
+          instruction on how to talk to someone afterwards. */}
+      {!loading && memories.length > 0 && (
+        <View style={styles.tip}>
+          <Ionicons name="bulb-outline" size={iconSize.sm} color={colors.accentStrong} />
+          <Text style={styles.tipText}>{tip.text}</Text>
+        </View>
+      )}
+
       {/* Contributing, not practising. This is the half of the app that keeps
           the reel from running dry, so it sits on the first screen. */}
       {dailyPrompt && !dailyPrompt.answered_memory_id && (
@@ -187,4 +198,6 @@ const styles = StyleSheet.create({
     borderColor: colors.accentSoft,
   },
   promptHead: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
+  tip: { flexDirection: 'row', gap: spacing.sm, alignItems: 'flex-start', paddingHorizontal: spacing.xs },
+  tipText: { ...typography.subtext, flex: 1, fontStyle: 'italic' },
 });

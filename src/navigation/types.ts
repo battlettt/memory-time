@@ -20,6 +20,8 @@ export type LifeStoryStackParamList = {
 
 export type SettingsStackParamList = {
   SettingsHome: undefined;
+  WeeklyReport: undefined;
+  HandoffSheet: undefined;
 };
 
 export type MainTabParamList = {

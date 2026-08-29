@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Platform, Share, StyleSheet, Switch, Text, View } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import { Ionicons } from '@expo/vector-icons';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Screen } from '../../components/Screen';
 import { ScreenHeader } from '../../components/ScreenHeader';
 import { PrimaryButton } from '../../components/PrimaryButton';
@@ -21,8 +22,11 @@ import {
   type ContributionLink,
 } from '../../lib/contributionLinks';
 import { colors, fonts, iconSize, radius, spacing, typography } from '../../lib/theme';
+import type { SettingsStackParamList } from '../../navigation/types';
 
-export function SettingsScreen() {
+type Props = NativeStackScreenProps<SettingsStackParamList, 'SettingsHome'>;
+
+export function SettingsScreen({ navigation }: Props) {
   const { signOut } = useAuth();
   const { current, memberships, setCurrentFamilyId } = useFamily();
   const { members } = useFamilyMembers(current?.family.id ?? null);
@@ -169,6 +173,25 @@ export function SettingsScreen() {
             <Text style={styles.errorText}>{error}</Text>
           </View>
         )}
+      </Card>
+
+      <Card style={styles.card}>
+        <Text style={typography.label}>FOR YOU</Text>
+        <Text style={typography.subtext}>
+          You're doing the work here. These two are yours.
+        </Text>
+        <PrimaryButton
+          label="This week"
+          icon="stats-chart-outline"
+          variant="secondary"
+          onPress={() => navigation.navigate('WeeklyReport')}
+        />
+        <PrimaryButton
+          label="One page for a new carer"
+          icon="document-text-outline"
+          variant="secondary"
+          onPress={() => navigation.navigate('HandoffSheet')}
+        />
       </Card>
 
       <Card style={styles.card}>

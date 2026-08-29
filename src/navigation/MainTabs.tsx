@@ -6,7 +6,7 @@ import { PracticeNavigator } from './PracticeNavigator';
 import { MemoriesNavigator } from './MemoriesNavigator';
 import { OnThisDayScreen } from '../screens/onthisday/OnThisDayScreen';
 import { LifeStoryNavigator } from './LifeStoryNavigator';
-import { SettingsScreen } from '../screens/settings/SettingsScreen';
+import { SettingsNavigator } from './SettingsNavigator';
 import { colors, fonts } from '../lib/theme';
 import type { MainTabParamList } from './types';
 
@@ -60,7 +60,7 @@ export function MainTabs() {
       <Tab.Screen name="MemoriesTab" component={MemoriesNavigator} options={{ title: 'Memories' }} />
       <Tab.Screen name="OnThisDayTab" component={OnThisDayScreen} options={{ title: 'Album' }} />
       <Tab.Screen name="LifeStoryTab" component={LifeStoryNavigator} options={{ title: 'Story' }} />
-      <Tab.Screen name="SettingsTab" component={SettingsScreen} options={{ title: 'Settings' }} />
+      <Tab.Screen name="SettingsTab" component={SettingsNavigator} options={{ title: 'Settings' }} />
     </Tab.Navigator>
   );
 }
