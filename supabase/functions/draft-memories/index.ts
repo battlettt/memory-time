@@ -113,14 +113,27 @@ async function draftOne(image: IncomingImage, index: number): Promise<Draft | nu
     }),
   });
 
-  if (!response.ok) return null;
+  // Log the upstream failure rather than returning a silent null. Swallowing
+  // this made a rotated API key indistinguishable from "the model had nothing
+  // to say about that photo", which is exactly the wrong thing to guess at.
+  // The key itself is never logged — only the status and the error type.
+  if (!response.ok) {
+    const detail = await response.text();
+    console.error(
+      `anthropic request failed: ${response.status} ${response.statusText} ${detail.slice(0, 300)}`
+    );
+    return null;
+  }
 
   const body = await response.json();
   const raw: string = body.content?.[0]?.text ?? '';
 
   try {
     const parsed = JSON.parse(stripFence(raw));
-    if (!parsed.question || !parsed.answer) return null;
+    if (!parsed.question || !parsed.answer) {
+      console.error(`anthropic returned unusable draft: ${raw.slice(0, 200)}`);
+      return null;
+    }
 
     // Only the EXIF date is trusted. A model guessing "this looks like the
     // 1960s" would be inventing family history.
@@ -137,7 +150,8 @@ async function draftOne(image: IncomingImage, index: number): Promise<Draft | nu
       occurredPrecision: takenOn ? 'day' : null,
       confident: parsed.confident === true,
     };
-  } catch {
+  } catch (error) {
+    console.error(`could not parse draft: ${String(error)} raw=${raw.slice(0, 200)}`);
     return null;
   }
 }
