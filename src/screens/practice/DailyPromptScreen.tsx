@@ -23,6 +23,7 @@ export function DailyPromptScreen({ navigation }: Props) {
   const [loading, setLoading] = useState(true);
   const [answer, setAnswer] = useState('');
   const [voiceUri, setVoiceUri] = useState<string | null>(null);
+  const [transcript, setTranscript] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -64,6 +65,7 @@ export function DailyPromptScreen({ navigation }: Props) {
         // label for the list until somebody types more.
         answer: answer.trim() || 'Answered out loud — press play to hear it.',
         voicePath,
+        voiceTranscript: transcript,
         source: 'daily_prompt',
         needsReview: !answer.trim(),
       });
@@ -126,7 +128,15 @@ export function DailyPromptScreen({ navigation }: Props) {
             actual voice when this comes up in a session.
           </Text>
 
-          <VoiceRecorder uri={voiceUri} onChange={setVoiceUri} />
+          <VoiceRecorder
+            uri={voiceUri}
+            onChange={setVoiceUri}
+            // Only fill an empty box — never overwrite something they typed.
+            onTranscript={(text) => {
+              setTranscript(text);
+              setAnswer((prev) => prev.trim() || text);
+            }}
+          />
 
           <TextField
             label="Or write it down"

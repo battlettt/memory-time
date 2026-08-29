@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Platform, Share, StyleSheet, Text, View } from 'react-native';
+import * as Clipboard from 'expo-clipboard';
 import { Ionicons } from '@expo/vector-icons';
 import { Screen } from '../../components/Screen';
 import { ScreenHeader } from '../../components/ScreenHeader';
@@ -9,6 +10,13 @@ import { useAuth } from '../../state/AuthContext';
 import { useFamily } from '../../state/FamilyContext';
 import { useFamilyMembers } from '../../lib/useFamilyMembers';
 import { createInviteCode } from '../../lib/invites';
+import {
+  contributionUrl,
+  createContributionLink,
+  listContributionLinks,
+  revokeContributionLink,
+  type ContributionLink,
+} from '../../lib/contributionLinks';
 import { colors, fonts, iconSize, radius, spacing, typography } from '../../lib/theme';
 
 export function SettingsScreen() {
@@ -30,6 +38,50 @@ export function SettingsScreen() {
       setError(e.message ?? 'Could not create an invite code');
     }
     setGenerating(false);
+  };
+
+  const [links, setLinks] = useState<ContributionLink[]>([]);
+  const [makingLink, setMakingLink] = useState(false);
+  const [copied, setCopied] = useState<string | null>(null);
+
+  const familyId = current?.family.id ?? null;
+
+  const refreshLinks = useCallback(async () => {
+    if (!familyId) return;
+    setLinks(await listContributionLinks(familyId));
+  }, [familyId]);
+
+  useEffect(() => {
+    refreshLinks();
+  }, [refreshLinks]);
+
+  const handleCreateLink = async () => {
+    if (!current) return;
+    setMakingLink(true);
+    setError(null);
+    try {
+      await createContributionLink(current.family.id, current.member.id);
+      await refreshLinks();
+    } catch (e: any) {
+      setError(e.message ?? 'Could not create a link');
+    }
+    setMakingLink(false);
+  };
+
+  const handleShare = async (token: string) => {
+    const url = contributionUrl(token);
+    // Native gets the share sheet; on web that is unreliable, so copy instead.
+    if (Platform.OS !== 'web') {
+      try {
+        await Share.share({ message: url });
+        return;
+      } catch {
+        /* fall through to copying */
+      }
+    }
+    await Clipboard.setStringAsync(url);
+    setCopied(token);
+    setTimeout(() => setCopied(null), 2500);
   };
 
   const initial = current?.member.display_name?.trim()?.[0]?.toUpperCase() ?? '?';
@@ -97,6 +149,47 @@ export function SettingsScreen() {
         )}
       </Card>
 
+      <Card style={styles.card}>
+        <Text style={typography.label}>SHARE A LINK</Text>
+        <Text style={typography.subtext}>
+          For relatives who won't install an app. They open the link, write a memory, and send it —
+          no account needed. Everything that arrives is held for you to look at first.
+        </Text>
+        <PrimaryButton
+          label="Create a link"
+          icon="link-outline"
+          variant="secondary"
+          onPress={handleCreateLink}
+          loading={makingLink}
+        />
+
+        {links.map((link) => (
+          <View key={link.id} style={styles.link}>
+            <View style={styles.linkText}>
+              <Text style={typography.bodyStrong} numberOfLines={1}>
+                {copied === link.token ? 'Copied to your clipboard' : contributionUrl(link.token)}
+              </Text>
+              <Text style={typography.caption}>
+                {link.submission_count} sent · expires{' '}
+                {link.expires_at ? new Date(link.expires_at).toLocaleDateString() : 'never'}
+              </Text>
+            </View>
+            <View style={styles.linkActions}>
+              <PrimaryButton
+                label={Platform.OS === 'web' ? 'Copy' : 'Share'}
+                variant="secondary"
+                onPress={() => handleShare(link.token)}
+              />
+              <PrimaryButton
+                label="Turn off"
+                variant="ghost"
+                onPress={() => revokeContributionLink(link.id).then(refreshLinks).catch(() => {})}
+              />
+            </View>
+          </View>
+        ))}
+      </Card>
+
       <PrimaryButton label="Sign out" variant="ghost" onPress={signOut} />
     </Screen>
   );
@@ -131,4 +224,12 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
   },
   errorText: { ...typography.subtext, color: colors.destructive, flex: 1 },
+  link: {
+    gap: spacing.sm,
+    paddingTop: spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
+  linkText: { gap: 2 },
+  linkActions: { flexDirection: 'row', gap: spacing.sm },
 });

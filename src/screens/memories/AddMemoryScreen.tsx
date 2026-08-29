@@ -25,6 +25,7 @@ export function AddMemoryScreen({ route, navigation }: Props) {
   const [category, setCategory] = useState<MemoryCategory>('relationship');
   const [photoUri, setPhotoUri] = useState<string | null>(null);
   const [voiceUri, setVoiceUri] = useState<string | null>(null);
+  const [transcript, setTranscript] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -59,6 +60,7 @@ export function AddMemoryScreen({ route, navigation }: Props) {
         note: note.trim() || null,
         photoPath,
         voicePath,
+        voiceTranscript: transcript,
       });
       navigation.navigate('MemoriesHome');
     } catch (e: any) {
@@ -105,7 +107,14 @@ export function AddMemoryScreen({ route, navigation }: Props) {
       <View style={styles.section}>
         <Text style={typography.label}>PHOTO AND VOICE</Text>
         <PhotoPicker uri={photoUri} onChange={setPhotoUri} />
-        <VoiceRecorder uri={voiceUri} onChange={setVoiceUri} />
+        <VoiceRecorder
+          uri={voiceUri}
+          onChange={setVoiceUri}
+          onTranscript={(text) => {
+            setTranscript(text);
+            setAnswer((prev) => prev.trim() || text);
+          }}
+        />
       </View>
 
       <View style={styles.section}>

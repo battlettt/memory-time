@@ -1,0 +1,15 @@
+project_id = "memory-time"
+
+# The contribution page is deliberately public: the whole point is that a
+# relative with no account and no app can open a link and send a memory. The
+# token in the URL is the credential, checked on every request, and everything
+# arriving this way is flagged needs_review before a family member sees it.
+[functions.contribute]
+verify_jwt = false
+
+# These two are called from the signed-in app and must keep JWT verification.
+[functions.generate-prompts]
+verify_jwt = true
+
+[functions.draft-memories]
+verify_jwt = true
