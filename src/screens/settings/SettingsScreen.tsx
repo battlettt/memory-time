@@ -12,6 +12,9 @@ import { useFamily } from '../../state/FamilyContext';
 import { Chip } from '../../components/Chip';
 import { useFamilyMembers } from '../../lib/useFamilyMembers';
 import { useFamilySettings } from '../../lib/useFamilySettings';
+import { useMemories } from '../../lib/useMemories';
+import { useLifeStory } from '../../lib/useLifeStory';
+import { exportBook } from '../../lib/bookExport';
 import { notificationsAvailable, syncDailyReminder } from '../../lib/notifications';
 import { createInviteCode } from '../../lib/invites';
 import {
@@ -47,7 +50,7 @@ export function SettingsScreen({ navigation }: Props) {
     setGenerating(false);
   };
 
-  const { settings, update } = useFamilySettings(current?.family.id ?? null);
+  const { settings, update } = useFamilySettings();
 
   // Keep the scheduled reminder in step with the preferences, including
   // cancelling it outright once memorial mode is on.
@@ -65,6 +68,30 @@ export function SettingsScreen({ navigation }: Props) {
     settings?.memorial_mode,
     current?.family.care_recipient_name,
   ]);
+
+  const { memories } = useMemories(current?.family.id ?? null);
+  const { sections } = useLifeStory(current?.family.id ?? null);
+  const { nameFor } = useFamilyMembers(current?.family.id ?? null);
+  const [exporting, setExporting] = useState(false);
+  const [confirmMemorial, setConfirmMemorial] = useState(false);
+
+  const handleExport = async () => {
+    if (!current) return;
+    setExporting(true);
+    setError(null);
+    try {
+      await exportBook({
+        familyName: current.family.name,
+        careRecipientName: current.family.care_recipient_name,
+        sections,
+        memories,
+        nameFor,
+      });
+    } catch (e: any) {
+      setError(e.message ?? 'Could not build the book');
+    }
+    setExporting(false);
+  };
 
   const [links, setLinks] = useState<ContributionLink[]>([]);
   const [makingLink, setMakingLink] = useState(false);
@@ -192,6 +219,17 @@ export function SettingsScreen({ navigation }: Props) {
           variant="secondary"
           onPress={() => navigation.navigate('HandoffSheet')}
         />
+        <PrimaryButton
+          label={exporting ? 'Building the book…' : 'Make a book'}
+          icon="book-outline"
+          variant="secondary"
+          loading={exporting}
+          onPress={handleExport}
+        />
+        <Text style={typography.caption}>
+          The story and the photographs as one document you can print and keep. It doesn't need
+          this app, an account, or us.
+        </Text>
       </Card>
 
       <Card style={styles.card}>
@@ -285,6 +323,49 @@ export function SettingsScreen({ navigation }: Props) {
             </View>
           </View>
         ))}
+      </Card>
+
+      {/* Every family using this eventually reaches this point, and most apps
+          simply carry on prompting. */}
+      <Card style={styles.card}>
+        <Text style={typography.label}>
+          {settings?.memorial_mode ? 'A PLACE TO REMEMBER' : 'IF THEY HAVE DIED'}
+        </Text>
+        {settings?.memorial_mode ? (
+          <Text style={typography.subtext}>
+            Reminders are off and nothing will ask you to practise. The album, the story and the
+            recordings all stay exactly as they are.
+          </Text>
+        ) : (
+          <Text style={typography.subtext}>
+            Turning this on stops every reminder and every prompt to practise, and keeps the album,
+            the story and the recordings. You can turn it off again.
+          </Text>
+        )}
+        <PrimaryButton
+          label={
+            settings?.memorial_mode
+              ? 'Start practising again'
+              : confirmMemorial
+                ? 'Tap again to turn on'
+                : 'Turn on remembering mode'
+          }
+          variant="ghost"
+          onPress={() => {
+            if (settings?.memorial_mode) {
+              update({ memorial_mode: false, memorial_since: null }).catch(() => {});
+              return;
+            }
+            if (!confirmMemorial) {
+              setConfirmMemorial(true);
+              return;
+            }
+            update({ memorial_mode: true, memorial_since: new Date().toISOString() }).catch(
+              () => {}
+            );
+            setConfirmMemorial(false);
+          }}
+        />
       </Card>
 
       <PrimaryButton label="Sign out" variant="ghost" onPress={signOut} />

@@ -64,7 +64,8 @@ export function FamilySetupScreen() {
               <View style={styles.optionText}>
                 <Text style={typography.heading}>Start a new group</Text>
                 <Text style={typography.subtext}>
-                  Set up the reel for your parent or grandparent, then invite the rest of the family.
+                  Start collecting for a parent or grandparent, then invite the rest of the family
+                  to add what they remember.
                 </Text>
               </View>
               <Ionicons name="chevron-forward" size={iconSize.md} color={colors.subtext} />

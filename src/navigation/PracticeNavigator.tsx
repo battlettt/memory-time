@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { PracticeHomeScreen } from '../screens/practice/PracticeHomeScreen';
 import { SessionScreen } from '../screens/practice/SessionScreen';
 import { DailyPromptScreen } from '../screens/practice/DailyPromptScreen';
+import { GrandchildScreen } from '../screens/practice/GrandchildScreen';
 import { stackScreenOptions, pushedScreenOptions } from './stackOptions';
 import type { PracticeStackParamList } from './types';
 
@@ -21,6 +22,11 @@ export function PracticeNavigator() {
         name="DailyPrompt"
         component={DailyPromptScreen}
         options={{ ...pushedScreenOptions, title: "Today's question" }}
+      />
+      <Stack.Screen
+        name="Grandchild"
+        component={GrandchildScreen}
+        options={{ ...pushedScreenOptions, title: 'A job for a grandchild' }}
       />
     </Stack.Navigator>
   );

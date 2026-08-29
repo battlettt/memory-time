@@ -38,9 +38,13 @@ export function SignInScreen() {
           <Ionicons name="heart" size={30} color={colors.onPrimary} />
         </View>
         <Text style={typography.display}>Memory Time</Text>
+        {/* No diagnosis in the pitch. The story and album half is worth having
+            for any family with an ageing parent, and that is a far larger and
+            far less painful door to come in through. The practice side is
+            there for whoever grows into needing it. */}
         <Text style={[typography.bodyLarge, styles.tagline]}>
-          A shared memory reel for your family — photos, voices and small stories, practised
-          together.
+          Collect your parents' stories while you still can — photographs, their voice, the small
+          things nobody writes down.
         </Text>
       </View>
 

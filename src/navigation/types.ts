@@ -2,6 +2,7 @@ export type PracticeStackParamList = {
   PracticeHome: undefined;
   Session: { memoryIds: string[] };
   DailyPrompt: undefined;
+  Grandchild: undefined;
 };
 
 export type MemoriesStackParamList = {

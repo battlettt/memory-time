@@ -22,7 +22,7 @@ type Props = NativeStackScreenProps<PracticeStackParamList, 'PracticeHome'>;
 export function PracticeHomeScreen({ navigation }: Props) {
   const { current } = useFamily();
   const { memories, loading } = useMemories(current?.family.id ?? null);
-  const { settings } = useFamilySettings(current?.family.id ?? null);
+  const { settings } = useFamilySettings();
   const { enter: enterElderMode } = useElderMode();
   const tip = useMemo(() => tipForToday(), []);
   const due = useMemo(() => dueMemories(memories), [memories]);
@@ -55,6 +55,38 @@ export function PracticeHomeScreen({ navigation }: Props) {
     navigation.getParent<BottomTabNavigationProp<MainTabParamList>>()?.navigate(tab);
 
   const name = current?.family.care_recipient_name ?? 'them';
+
+  // Nothing here asks anything once they have died. No streaks, no due
+  // counts, no daily question — the app becomes somewhere to look, not a
+  // thing with expectations.
+  if (settings?.memorial_mode) {
+    return (
+      <Screen>
+        <View style={styles.heading}>
+          <Text style={typography.label}>REMEMBERING</Text>
+          <Text style={typography.display}>{name}</Text>
+        </View>
+        <Card elevation="raised" style={styles.restCard}>
+          <Text style={typography.serifLarge}>Everything is still here</Text>
+          <Text style={[typography.body, styles.restBody]}>
+            The photographs, the story, and every voice recording. Nothing will ask you to practise
+            or remind you to open the app.
+          </Text>
+        </Card>
+        <PrimaryButton
+          label="Look through the album"
+          icon="images-outline"
+          onPress={() => goToTab('OnThisDayTab')}
+        />
+        <PrimaryButton
+          label={`Read ${name}'s story`}
+          icon="book-outline"
+          variant="secondary"
+          onPress={() => goToTab('LifeStoryTab')}
+        />
+      </Screen>
+    );
+  }
 
   return (
     <Screen>
@@ -162,6 +194,13 @@ export function PracticeHomeScreen({ navigation }: Props) {
           onPress={enterElderMode}
         />
       )}
+
+      <PrimaryButton
+        label="A job for a grandchild"
+        icon="happy-outline"
+        variant="ghost"
+        onPress={() => navigation.navigate('Grandchild')}
+      />
     </Screen>
   );
 }

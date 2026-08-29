@@ -45,7 +45,7 @@ export function SessionScreen({ route, navigation }: Props) {
   const { current } = useFamily();
   const { memories } = useMemories(current?.family.id ?? null);
   const { nameFor } = useFamilyMembers(current?.family.id ?? null);
-  const { settings } = useFamilySettings(current?.family.id ?? null);
+  const { settings } = useFamilySettings();
   const { memoryIds } = route.params;
 
   const queueRef = useRef(new SessionQueue(memoryIds));

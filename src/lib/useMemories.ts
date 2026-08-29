@@ -6,6 +6,7 @@ import {
   removeObject,
   signedUrlsFor,
 } from './media';
+import { readCache, writeCache } from './cache';
 import type { DatePrecision, Memory, MemoryCategory, MemorySource } from './types';
 
 /**
@@ -44,13 +45,32 @@ export function useMemories(familyId: string | null) {
       return;
     }
     setLoading(true);
-    const { data } = await supabase
+
+    // Paint from the local copy first. In a care home with no signal this is
+    // the difference between a working session and an empty screen.
+    const cached = await readCache<Memory[]>(`memories:${familyId}`);
+    if (cached?.length) {
+      setMemories(cached);
+      setLoading(false);
+    }
+
+    const { data, error } = await supabase
       .from('memories')
       .select('*')
       .eq('family_id', familyId)
       .order('created_at', { ascending: false });
-    setMemories(await withSignedMedia(data ?? []));
+
+    // Offline or failing: keep whatever the cache gave us rather than
+    // blanking a reel somebody is in the middle of using.
+    if (error || !data) {
+      setLoading(false);
+      return;
+    }
+
+    const withMedia = await withSignedMedia(data);
+    setMemories(withMedia);
     setLoading(false);
+    writeCache(`memories:${familyId}`, withMedia);
   }, [familyId]);
 
   useEffect(() => {
