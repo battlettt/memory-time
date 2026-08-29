@@ -11,6 +11,7 @@ import { Chip } from '../../components/Chip';
 import { useFamily } from '../../state/FamilyContext';
 import { addMemory } from '../../lib/useMemories';
 import { uploadPhoto, uploadVoiceNote } from '../../lib/media';
+import { LANGUAGES } from '../../lib/languages';
 import { colors, iconSize, radius, spacing, typography } from '../../lib/theme';
 import type { MemoriesStackParamList } from '../../navigation/types';
 import type { MemoryCategory } from '../../lib/types';
@@ -26,6 +27,7 @@ export function AddMemoryScreen({ route, navigation }: Props) {
   const [photoUri, setPhotoUri] = useState<string | null>(null);
   const [voiceUri, setVoiceUri] = useState<string | null>(null);
   const [transcript, setTranscript] = useState<string | null>(null);
+  const [language, setLanguage] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -61,6 +63,7 @@ export function AddMemoryScreen({ route, navigation }: Props) {
         photoPath,
         voicePath,
         voiceTranscript: transcript,
+        language,
       });
       navigation.navigate('MemoriesHome');
     } catch (e: any) {
@@ -105,11 +108,30 @@ export function AddMemoryScreen({ route, navigation }: Props) {
       </View>
 
       <View style={styles.section}>
+        <Text style={typography.label}>LANGUAGE</Text>
+        <Text style={typography.caption}>
+          Only if this one is best said in another language — people often
+          return to their first one.
+        </Text>
+        <View style={styles.categoryRow}>
+          {LANGUAGES.slice(0, 8).map((l) => (
+            <Chip
+              key={l.code}
+              label={l.label}
+              selected={language === l.code}
+              onPress={() => setLanguage(language === l.code ? null : l.code)}
+            />
+          ))}
+        </View>
+      </View>
+
+      <View style={styles.section}>
         <Text style={typography.label}>PHOTO AND VOICE</Text>
         <PhotoPicker uri={photoUri} onChange={setPhotoUri} />
         <VoiceRecorder
           uri={voiceUri}
           onChange={setVoiceUri}
+          lang={language ?? undefined}
           onTranscript={(text) => {
             setTranscript(text);
             setAnswer((prev) => prev.trim() || text);

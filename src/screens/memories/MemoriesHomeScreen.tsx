@@ -12,6 +12,7 @@ import { useFamily } from '../../state/FamilyContext';
 import { useMemories } from '../../lib/useMemories';
 import { useFamilyMembers } from '../../lib/useFamilyMembers';
 import { formatOccurred } from '../../lib/dates';
+import { languageLabel } from '../../lib/languages';
 import { colors, iconSize, radius, spacing, typography } from '../../lib/theme';
 import type { MemoriesStackParamList } from '../../navigation/types';
 import type { Memory, MemoryCategory } from '../../lib/types';
@@ -79,6 +80,9 @@ export function MemoriesHomeScreen({ navigation }: Props) {
                 <Ionicons name="heart" size={14} color={colors.accent} />
                 <Text style={typography.caption}>{nameFor(item.added_by)}</Text>
                 {occurred && <Text style={typography.caption}>· {occurred}</Text>}
+                {item.language && (
+                  <Text style={typography.caption}>· {languageLabel(item.language)}</Text>
+                )}
                 {item.voice_url && (
                   <>
                     <Ionicons name="mic" size={14} color={colors.accent} style={styles.micIcon} />

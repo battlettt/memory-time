@@ -11,6 +11,7 @@ import {
 import { Lora_600SemiBold, Lora_700Bold } from '@expo-google-fonts/lora';
 import { AuthProvider } from './src/state/AuthContext';
 import { FamilyProvider } from './src/state/FamilyContext';
+import { ElderModeProvider } from './src/state/ElderModeContext';
 import { RootNavigator } from './src/navigation/RootNavigator';
 import { ErrorBoundary } from './src/components/ErrorBoundary';
 import { colors } from './src/lib/theme';
@@ -37,8 +38,10 @@ export default function App() {
         <ErrorBoundary>
           <AuthProvider>
             <FamilyProvider>
-              <RootNavigator />
-              <StatusBar style="dark" />
+              <ElderModeProvider>
+                <RootNavigator />
+                <StatusBar style="dark" />
+              </ElderModeProvider>
             </FamilyProvider>
           </AuthProvider>
         </ErrorBoundary>

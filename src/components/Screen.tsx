@@ -1,7 +1,7 @@
 import React from 'react';
 import { ScrollView, StyleSheet, View, ViewStyle } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { colors, spacing } from '../lib/theme';
+import { colors, maxContentWidth, spacing } from '../lib/theme';
 
 interface Props {
   children: React.ReactNode;
@@ -38,6 +38,8 @@ export function Screen({ children, scroll = true, style }: Props) {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background },
-  container: { flex: 1 },
+  // On a tablet the content stays in a readable column rather than running
+  // the full width of an iPad, which is hard to track a line back across.
+  container: { flex: 1, width: '100%', maxWidth: maxContentWidth, alignSelf: 'center' },
   content: { padding: spacing.lg, gap: spacing.md },
 });

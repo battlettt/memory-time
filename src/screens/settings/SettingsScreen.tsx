@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Platform, Share, StyleSheet, Text, View } from 'react-native';
+import { Platform, Share, StyleSheet, Switch, Text, View } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import { Ionicons } from '@expo/vector-icons';
 import { Screen } from '../../components/Screen';
@@ -8,7 +8,10 @@ import { PrimaryButton } from '../../components/PrimaryButton';
 import { Card } from '../../components/Card';
 import { useAuth } from '../../state/AuthContext';
 import { useFamily } from '../../state/FamilyContext';
+import { Chip } from '../../components/Chip';
 import { useFamilyMembers } from '../../lib/useFamilyMembers';
+import { useFamilySettings } from '../../lib/useFamilySettings';
+import { notificationsAvailable, syncDailyReminder } from '../../lib/notifications';
 import { createInviteCode } from '../../lib/invites';
 import {
   contributionUrl,
@@ -39,6 +42,25 @@ export function SettingsScreen() {
     }
     setGenerating(false);
   };
+
+  const { settings, update } = useFamilySettings(current?.family.id ?? null);
+
+  // Keep the scheduled reminder in step with the preferences, including
+  // cancelling it outright once memorial mode is on.
+  useEffect(() => {
+    if (!settings || !current) return;
+    syncDailyReminder({
+      enabled: settings.daily_prompt_enabled,
+      hour: settings.daily_prompt_hour,
+      careRecipientName: current.family.care_recipient_name,
+      memorialMode: settings.memorial_mode,
+    }).catch(() => {});
+  }, [
+    settings?.daily_prompt_enabled,
+    settings?.daily_prompt_hour,
+    settings?.memorial_mode,
+    current?.family.care_recipient_name,
+  ]);
 
   const [links, setLinks] = useState<ContributionLink[]>([]);
   const [makingLink, setMakingLink] = useState(false);
@@ -150,6 +172,58 @@ export function SettingsScreen() {
       </Card>
 
       <Card style={styles.card}>
+        <Text style={typography.label}>PREFERENCES</Text>
+
+        <View style={styles.prefRow}>
+          <View style={styles.prefText}>
+            <Text style={typography.bodyStrong}>Larger text</Text>
+            <Text style={typography.caption}>
+              Applies to sessions, the album and the hand-over screen — the ones{' '}
+              {current?.family.care_recipient_name ?? 'they'} actually reads.
+            </Text>
+          </View>
+          <Switch
+            value={settings?.large_text ?? false}
+            onValueChange={(v) => update({ large_text: v }).catch(() => {})}
+            trackColor={{ true: colors.primary, false: colors.borderStrong }}
+          />
+        </View>
+
+        <View style={styles.prefRow}>
+          <View style={styles.prefText}>
+            <Text style={typography.bodyStrong}>A question each day</Text>
+            <Text style={typography.caption}>
+              {notificationsAvailable()
+                ? `One question, at ${settings?.daily_prompt_hour ?? 18}:00, for you to answer out loud.`
+                : 'One question a day on the Today screen. Reminders need the phone app.'}
+            </Text>
+          </View>
+          <Switch
+            value={settings?.daily_prompt_enabled ?? true}
+            onValueChange={(v) => update({ daily_prompt_enabled: v }).catch(() => {})}
+            trackColor={{ true: colors.primary, false: colors.borderStrong }}
+          />
+        </View>
+
+        <View style={styles.prefText}>
+          <Text style={typography.bodyStrong}>Session length</Text>
+          <Text style={typography.caption}>
+            Short sessions get finished; long ones get skipped.
+          </Text>
+          <View style={styles.chipRow}>
+            {[5, 8, 12, 20].map((n) => (
+              <Chip
+                key={n}
+                label={`${n}`}
+                selected={(settings?.session_size_limit ?? 8) === n}
+                onPress={() => update({ session_size_limit: n }).catch(() => {})}
+              />
+            ))}
+          </View>
+        </View>
+      </Card>
+
+      <Card style={styles.card}>
         <Text style={typography.label}>SHARE A LINK</Text>
         <Text style={typography.subtext}>
           For relatives who won't install an app. They open the link, write a memory, and send it —
@@ -230,6 +304,9 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: colors.border,
   },
+  prefRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  prefText: { flex: 1, gap: 2 },
+  chipRow: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.sm, flexWrap: 'wrap' },
   linkText: { gap: 2 },
   linkActions: { flexDirection: 'row', gap: spacing.sm },
 });

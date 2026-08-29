@@ -10,6 +10,7 @@ import { VoicePlayer } from '../../components/VoicePlayer';
 import { useFamily } from '../../state/FamilyContext';
 import { useMemories, updateMemory, deleteMemory } from '../../lib/useMemories';
 import { useFamilyMembers } from '../../lib/useFamilyMembers';
+import { useElderRecordings } from '../../lib/elderRecordings';
 import { unretireUpdate, retireUpdate } from '../../lib/srt';
 import { formatOccurred, parseLooseDate } from '../../lib/dates';
 import { colors, iconSize, radius, spacing, typography } from '../../lib/theme';
@@ -24,6 +25,8 @@ export function MemoryDetailScreen({ route, navigation }: Props) {
   const { nameFor } = useFamilyMembers(current?.family.id ?? null);
 
   const memory = memories.find((m) => m.id === memoryId) ?? null;
+  const { recordings } = useElderRecordings(current?.family.id ?? null, memoryId);
+  const recipient = current?.family.care_recipient_name ?? 'them';
 
   const [question, setQuestion] = useState('');
   const [answer, setAnswer] = useState('');
@@ -143,6 +146,24 @@ export function MemoryDetailScreen({ route, navigation }: Props) {
         <VoicePlayer uri={memory.voice_url} attribution={nameFor(memory.added_by)} />
       )}
 
+      {recordings.length > 0 && (
+        <Card style={styles.recordingsCard}>
+          <Text style={typography.label}>IN {recipient.toUpperCase()}'S OWN VOICE</Text>
+          <Text style={typography.caption}>
+            Recorded during sessions. This is the part families say they wish they had.
+          </Text>
+          {recordings.map((rec) =>
+            rec.audio_url ? (
+              <VoicePlayer
+                key={rec.id}
+                uri={rec.audio_url}
+                attribution={`${recipient}, ${new Date(rec.recorded_at).toLocaleDateString()}`}
+              />
+            ) : null
+          )}
+        </Card>
+      )}
+
       <Card style={styles.toggleCard}>
         <View style={styles.toggleRow}>
           <View style={styles.toggleText}>
@@ -205,6 +226,7 @@ const styles = StyleSheet.create({
   statusCard: { flexDirection: 'row', gap: spacing.md, padding: spacing.md, alignItems: 'flex-start' },
   restingCard: { backgroundColor: colors.accentSoft, borderColor: colors.accentSoft },
   statusText: { flex: 1, gap: 2 },
+  recordingsCard: { padding: spacing.md, gap: spacing.sm },
   toggleCard: { padding: spacing.md },
   toggleRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   toggleText: { flex: 1, gap: 2 },

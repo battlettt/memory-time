@@ -8,6 +8,7 @@ import { PrimaryButton } from '../../components/PrimaryButton';
 import { Card } from '../../components/Card';
 import { EmptyState } from '../../components/EmptyState';
 import { useFamily } from '../../state/FamilyContext';
+import { useElderMode } from '../../state/ElderModeContext';
 import { useMemories } from '../../lib/useMemories';
 import { useFamilySettings } from '../../lib/useFamilySettings';
 import { dueMemories, sessionSelection } from '../../lib/srt';
@@ -21,6 +22,7 @@ export function PracticeHomeScreen({ navigation }: Props) {
   const { current } = useFamily();
   const { memories, loading } = useMemories(current?.family.id ?? null);
   const { settings } = useFamilySettings(current?.family.id ?? null);
+  const { enter: enterElderMode } = useElderMode();
   const due = useMemo(() => dueMemories(memories), [memories]);
 
   // A capped session is one somebody will actually finish. Thirty due
@@ -136,6 +138,17 @@ export function PracticeHomeScreen({ navigation }: Props) {
           icon="images-outline"
           variant="secondary"
           onPress={() => goToTab('OnThisDayTab')}
+        />
+      )}
+
+      {/* Most of the hours in a day have no caregiver in the room. This is the
+          one screen that works without one. */}
+      {!loading && memories.some((m) => m.photo_url) && (
+        <PrimaryButton
+          label={`Hand the screen to ${name}`}
+          icon="hand-left-outline"
+          variant="ghost"
+          onPress={enterElderMode}
         />
       )}
     </Screen>

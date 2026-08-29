@@ -15,12 +15,14 @@ interface Props {
    * the contributor writing the same thing out twice.
    */
   onTranscript?: (text: string) => void;
+  /** BCP-47, so a memory recorded in Punjabi is transcribed as Punjabi. */
+  lang?: string;
 }
 
-export function VoiceRecorder({ uri, onChange, onTranscript }: Props) {
+export function VoiceRecorder({ uri, onChange, onTranscript, lang }: Props) {
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
   const [isRecording, setIsRecording] = useState(false);
-  const transcription = useLiveTranscription();
+  const transcription = useLiveTranscription(lang || 'en-GB');
 
   const start = async () => {
     const permission = await Audio.requestPermissionsAsync();

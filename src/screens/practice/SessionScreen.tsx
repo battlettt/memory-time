@@ -7,6 +7,7 @@ import { PrimaryButton } from '../../components/PrimaryButton';
 import { Card } from '../../components/Card';
 import { ProgressBar } from '../../components/ProgressBar';
 import { VoicePlayer } from '../../components/VoicePlayer';
+import { ElderAnswerRecorder } from '../../components/ElderAnswerRecorder';
 import { useFamily } from '../../state/FamilyContext';
 import { useMemories, recordSrtResult, updateMemory } from '../../lib/useMemories';
 import { useFamilyMembers } from '../../lib/useFamilyMembers';
@@ -270,6 +271,13 @@ export function SessionScreen({ route, navigation }: Props) {
                 <Ionicons name="heart" size={iconSize.sm} color={colors.accent} />
                 <Text style={typography.subtext}>Added by {nameFor(currentMemory.added_by)}</Text>
               </View>
+              {current && (
+                <ElderAnswerRecorder
+                  familyId={current.family.id}
+                  memoryId={currentMemory.id}
+                  personName={current.family.care_recipient_name}
+                />
+              )}
             </Card>
 
             <View style={styles.buttonRow}>

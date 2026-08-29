@@ -131,3 +131,32 @@ export const typography = {
 
 export const minTapTarget = 56;
 export const iconSize = { sm: 18, md: 22, lg: 28, xl: 36 };
+
+export type Typography = typeof typography;
+
+/**
+ * Scale the whole type ramp by a factor.
+ *
+ * Line height scales with size rather than staying fixed — enlarging text
+ * inside an unchanged line box is how you get overlapping descenders.
+ */
+export function scaleTypography(scale: number): Typography {
+  if (scale === 1) return typography;
+  const out: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(typography)) {
+    const style = value as { fontSize: number; lineHeight: number };
+    out[key] = {
+      ...style,
+      fontSize: Math.round(style.fontSize * scale),
+      lineHeight: Math.round(style.lineHeight * scale),
+    };
+  }
+  return out as Typography;
+}
+
+/**
+ * Tablets. Most elders in this situation are handed an iPad rather than a
+ * phone, and a line of text running the full width of one is genuinely hard
+ * to track back from. Content stays in a readable column and centres.
+ */
+export const maxContentWidth = 620;
