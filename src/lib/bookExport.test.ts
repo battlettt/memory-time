@@ -67,4 +67,51 @@ describe('buildBookHtml', () => {
     expect(html).not.toMatch(/src="https?:/);
     expect(html).not.toMatch(/<link|<script/);
   });
+
+  it('numbers the chapters', async () => {
+    const html = await buildBookHtml(input);
+    expect(html).toContain('Chapter 1');
+    expect(html).toContain('Chapter 2');
+  });
+
+  it('opens with an epigraph rather than straight into text', async () => {
+    const html = await buildBookHtml(input);
+    expect(html).toContain('These are the things we did not want to lose');
+  });
+
+  it('names the people who contributed', async () => {
+    // The point of the closing page: this is a family's collective work,
+    // not an export from an app.
+    const html = await buildBookHtml({
+      ...input,
+      memories: [
+        { id: '1', added_by: 'm1', photo_url: null },
+        { id: '2', added_by: 'm2', photo_url: null },
+      ] as Memory[],
+      nameFor: (id) => (id === 'm1' ? 'Sarah' : 'Michael'),
+    });
+    expect(html).toContain('Remembered by');
+    expect(html).toContain('Sarah');
+    expect(html).toContain('Michael');
+  });
+
+  it('does not list unknown contributors by their placeholder', async () => {
+    const html = await buildBookHtml({
+      ...input,
+      memories: [{ id: '1', added_by: null, photo_url: null }] as Memory[],
+      nameFor: () => 'A family member',
+    });
+    expect(html).not.toContain('A family member');
+  });
+
+  it('has no cover portrait when there are no photographs', async () => {
+    const html = await buildBookHtml(input);
+    expect(html).not.toContain('class="portrait"');
+  });
+
+  it('keeps the drop cap in CSS so paragraphs stay plain markup', async () => {
+    const html = await buildBookHtml(input);
+    expect(html).toContain('::first-letter');
+    expect(html).toContain('<p>She grew up above the shop.</p>');
+  });
 });
