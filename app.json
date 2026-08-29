@@ -11,7 +11,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#DCEBE9",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
@@ -20,6 +20,31 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      "expo-secure-store",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Memory Time needs access to your photos so you can add them to the family memory reel."
+        }
+      ],
+      [
+        "expo-av",
+        {
+          "microphonePermission": "Memory Time needs the microphone to record voice notes for memories."
+        }
+      ],
+      "expo-notifications",
+      "expo-font",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#FBF7F0",
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 160
+        }
+      ]
+    ]
   }
 }

@@ -1,20 +1,48 @@
+import { useCallback } from 'react';
+import { View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import * as SplashScreen from 'expo-splash-screen';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import {
+  useFonts,
+  AtkinsonHyperlegible_400Regular,
+  AtkinsonHyperlegible_700Bold,
+} from '@expo-google-fonts/atkinson-hyperlegible';
+import { Lora_600SemiBold, Lora_700Bold } from '@expo-google-fonts/lora';
+import { AuthProvider } from './src/state/AuthContext';
+import { FamilyProvider } from './src/state/FamilyContext';
+import { RootNavigator } from './src/navigation/RootNavigator';
+import { ErrorBoundary } from './src/components/ErrorBoundary';
+import { colors } from './src/lib/theme';
+
+SplashScreen.preventAutoHideAsync().catch(() => {});
 
 export default function App() {
+  const [fontsLoaded] = useFonts({
+    AtkinsonHyperlegible_400Regular,
+    AtkinsonHyperlegible_700Bold,
+    Lora_600SemiBold,
+    Lora_700Bold,
+  });
+
+  const onLayout = useCallback(async () => {
+    if (fontsLoaded) await SplashScreen.hideAsync();
+  }, [fontsLoaded]);
+
+  if (!fontsLoaded) return null;
+
   return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <SafeAreaProvider>
+      <View style={{ flex: 1, backgroundColor: colors.background }} onLayout={onLayout}>
+        <ErrorBoundary>
+          <AuthProvider>
+            <FamilyProvider>
+              <RootNavigator />
+              <StatusBar style="dark" />
+            </FamilyProvider>
+          </AuthProvider>
+        </ErrorBoundary>
+      </View>
+    </SafeAreaProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
