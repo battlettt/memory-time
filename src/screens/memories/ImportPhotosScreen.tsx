@@ -1,0 +1,284 @@
+import React, { useState } from 'react';
+import { ActivityIndicator, Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { Screen } from '../../components/Screen';
+import { Card } from '../../components/Card';
+import { PrimaryButton } from '../../components/PrimaryButton';
+import { TextField } from '../../components/TextField';
+import { EmptyState } from '../../components/EmptyState';
+import { useFamily } from '../../state/FamilyContext';
+import { addMemory } from '../../lib/useMemories';
+import { uploadPhoto } from '../../lib/media';
+import { formatOccurred } from '../../lib/dates';
+import {
+  MAX_IMPORT_BATCH,
+  capturePhotoForImport,
+  draftMemoriesFromPhotos,
+  pickPhotosForImport,
+  type MemoryDraft,
+  type PickedPhoto,
+} from '../../lib/photoImport';
+import { colors, iconSize, radius, spacing, typography } from '../../lib/theme';
+import type { MemoriesStackParamList } from '../../navigation/types';
+
+type Props = NativeStackScreenProps<MemoriesStackParamList, 'ImportPhotos'>;
+
+type Stage = 'pick' | 'drafting' | 'review' | 'saving';
+
+export function ImportPhotosScreen({ navigation }: Props) {
+  const { current } = useFamily();
+  const [stage, setStage] = useState<Stage>('pick');
+  const [photos, setPhotos] = useState<PickedPhoto[]>([]);
+  const [drafts, setDrafts] = useState<MemoryDraft[]>([]);
+  const [discarded, setDiscarded] = useState<Set<number>>(new Set());
+  const [error, setError] = useState<string | null>(null);
+  const [progress, setProgress] = useState(0);
+
+  const name = current?.family.care_recipient_name ?? 'them';
+
+  const run = async (picked: PickedPhoto[]) => {
+    if (!current || picked.length === 0) return;
+    setPhotos(picked);
+    setDrafts([]);
+    setDiscarded(new Set());
+    setStage('drafting');
+    setError(null);
+    try {
+      const result = await draftMemoriesFromPhotos(current.family.id, picked);
+      if (result.length === 0) {
+        setError('Nothing came back for those photos. You can still add them by hand.');
+        setStage('pick');
+        return;
+      }
+      setDrafts(result);
+      setStage('review');
+    } catch (e: any) {
+      setError(e.message ?? 'Could not read those photos');
+      setStage('pick');
+    }
+  };
+
+  const edit = (index: number, patch: Partial<MemoryDraft>) =>
+    setDrafts((prev) => prev.map((d) => (d.index === index ? { ...d, ...patch } : d)));
+
+  const toggleDiscard = (index: number) =>
+    setDiscarded((prev) => {
+      const next = new Set(prev);
+      if (next.has(index)) next.delete(index);
+      else next.add(index);
+      return next;
+    });
+
+  const kept = drafts.filter((d) => !discarded.has(d.index));
+
+  const handleSave = async () => {
+    if (!current || kept.length === 0) return;
+    setStage('saving');
+    setError(null);
+    setProgress(0);
+    try {
+      for (const draft of kept) {
+        const photo = photos[draft.index];
+        const photoPath = photo ? await uploadPhoto(current.family.id, photo.uri) : null;
+        await addMemory({
+          familyId: current.family.id,
+          memberId: current.member.id,
+          category: draft.category,
+          question: draft.question.trim(),
+          answer: draft.answer.trim(),
+          photoPath,
+          occurredOn: draft.occurredOn,
+          occurredPrecision: draft.occurredPrecision,
+          source: 'import',
+          // Anything still holding a bracketed blank is flagged so it can be
+          // found again rather than quietly entering rotation half-finished.
+          needsReview: !draft.confident,
+        });
+        setProgress((p) => p + 1);
+      }
+      navigation.navigate('MemoriesHome');
+    } catch (e: any) {
+      setError(e.message ?? 'Could not save these memories');
+      setStage('review');
+    }
+  };
+
+  if (stage === 'drafting' || stage === 'saving') {
+    return (
+      <Screen>
+        <View style={styles.busy}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={typography.serifLarge}>
+            {stage === 'drafting' ? 'Reading the photographs…' : 'Saving…'}
+          </Text>
+          <Text style={[typography.subtext, styles.centered]}>
+            {stage === 'drafting'
+              ? `Drafting a question for each one. You'll get to correct them before anything is saved.`
+              : `${progress} of ${kept.length} saved.`}
+          </Text>
+        </View>
+      </Screen>
+    );
+  }
+
+  if (stage === 'pick') {
+    return (
+      <Screen>
+        <EmptyState
+          icon="images-outline"
+          title="Add photos in a batch"
+          body={`Pick up to ${MAX_IMPORT_BATCH} photos and each one gets a draft question and answer. You correct them, then they go in — much faster than typing every memory about ${name} from scratch.`}
+        />
+        {error && (
+          <View style={styles.error}>
+            <Ionicons name="alert-circle-outline" size={iconSize.md} color={colors.destructive} />
+            <Text style={styles.errorText}>{error}</Text>
+          </View>
+        )}
+        <PrimaryButton
+          label="Choose photos"
+          icon="images"
+          onPress={async () => run(await pickPhotosForImport())}
+        />
+        <PrimaryButton
+          label="Photograph a print"
+          icon="camera"
+          variant="secondary"
+          onPress={async () => {
+            const shot = await capturePhotoForImport();
+            if (shot) run([shot]);
+          }}
+        />
+        <Text style={[typography.caption, styles.centered]}>
+          Most families have a shoebox, not a photo library. Photographing a print works just as
+          well.
+        </Text>
+      </Screen>
+    );
+  }
+
+  return (
+    <Screen>
+      <Text style={typography.title}>Check these over</Text>
+      <Text style={typography.subtext}>
+        These are drafts. Nothing is saved until you tap the button at the bottom, and anything
+        with a blank in square brackets needs a real name putting in.
+      </Text>
+
+      {drafts.map((draft) => {
+        const photo = photos[draft.index];
+        const isDiscarded = discarded.has(draft.index);
+        const occurred = formatOccurred(draft.occurredOn, draft.occurredPrecision);
+
+        return (
+          <Card key={draft.index} style={[styles.draft, isDiscarded && styles.draftDiscarded]}>
+            <View style={styles.draftHead}>
+              {photo && <Image source={{ uri: photo.uri }} style={styles.thumb} />}
+              <View style={styles.draftMeta}>
+                {occurred ? (
+                  <View style={styles.dateChip}>
+                    <Ionicons name="calendar-outline" size={12} color={colors.accentStrong} />
+                    <Text style={styles.dateChipText}>{occurred}</Text>
+                  </View>
+                ) : (
+                  <Text style={typography.caption}>No date in the file</Text>
+                )}
+                {!draft.confident && (
+                  <View style={styles.needsChip}>
+                    <Ionicons name="create-outline" size={12} color={colors.accentStrong} />
+                    <Text style={styles.dateChipText}>Needs a name</Text>
+                  </View>
+                )}
+                <Pressable
+                  accessibilityRole="button"
+                  onPress={() => toggleDiscard(draft.index)}
+                  style={styles.skip}
+                >
+                  <Ionicons
+                    name={isDiscarded ? 'add-circle-outline' : 'close-circle-outline'}
+                    size={iconSize.sm}
+                    color={colors.subtext}
+                  />
+                  <Text style={typography.caption}>{isDiscarded ? 'Keep' : 'Skip this one'}</Text>
+                </Pressable>
+              </View>
+            </View>
+
+            {!isDiscarded && (
+              <>
+                <TextField
+                  label="Question"
+                  value={draft.question}
+                  onChangeText={(question) => edit(draft.index, { question })}
+                />
+                <TextField
+                  label="Answer"
+                  value={draft.answer}
+                  onChangeText={(answer) => edit(draft.index, { answer })}
+                />
+              </>
+            )}
+          </Card>
+        );
+      })}
+
+      {error && (
+        <View style={styles.error}>
+          <Ionicons name="alert-circle-outline" size={iconSize.md} color={colors.destructive} />
+          <Text style={styles.errorText}>{error}</Text>
+        </View>
+      )}
+
+      <PrimaryButton
+        label={
+          kept.length === 0
+            ? 'Nothing selected'
+            : `Save ${kept.length} ${kept.length === 1 ? 'memory' : 'memories'}`
+        }
+        icon="checkmark"
+        disabled={kept.length === 0}
+        onPress={handleSave}
+      />
+    </Screen>
+  );
+}
+
+const styles = StyleSheet.create({
+  busy: { alignItems: 'center', gap: spacing.md, paddingVertical: spacing.xxl },
+  centered: { textAlign: 'center' },
+  draft: { padding: spacing.md, gap: spacing.sm },
+  draftDiscarded: { opacity: 0.55 },
+  draftHead: { flexDirection: 'row', gap: spacing.md },
+  thumb: { width: 92, height: 92, borderRadius: radius.md },
+  draftMeta: { flex: 1, gap: spacing.xs, alignItems: 'flex-start' },
+  dateChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: colors.accentSoft,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 3,
+    borderRadius: radius.pill,
+  },
+  needsChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: colors.surfaceMuted,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 3,
+    borderRadius: radius.pill,
+  },
+  dateChipText: { ...typography.caption, color: colors.onSurfaceMuted },
+  skip: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 'auto', paddingVertical: 4 },
+  error: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    backgroundColor: colors.destructiveSoft,
+    padding: spacing.md,
+    borderRadius: radius.md,
+  },
+  errorText: { ...typography.subtext, color: colors.destructive, flex: 1 },
+});

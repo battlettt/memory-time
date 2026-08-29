@@ -113,13 +113,21 @@ export function MemoriesHomeScreen({ navigation }: Props) {
           subtitle={`The questions and photos ${name} practises with.`}
         />
         <View style={styles.actions}>
+          {/* Batch import leads: typing memories one at a time is the reason
+              families stop contributing after the first week. */}
+          <PrimaryButton
+            label="Add from photos"
+            icon="images"
+            onPress={() => navigation.navigate('ImportPhotos')}
+          />
           <PrimaryButton
             label="Get topic ideas"
             icon="sparkles"
+            variant="secondary"
             onPress={() => navigation.navigate('TopicPrompts')}
           />
           <PrimaryButton
-            label="Add a memory"
+            label="Add one by hand"
             icon="add"
             variant="secondary"
             onPress={() => navigation.navigate('AddMemory', undefined)}

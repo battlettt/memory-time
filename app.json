@@ -26,7 +26,8 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "Memory Time needs access to your photos so you can add them to the family memory reel."
+          "photosPermission": "Memory Time needs access to your photos so you can add them to the family memory reel.",
+          "cameraPermission": "Memory Time uses the camera to photograph printed pictures so they can be added to the reel."
         }
       ],
       [
