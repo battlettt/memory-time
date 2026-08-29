@@ -2,6 +2,7 @@ import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { PracticeHomeScreen } from '../screens/practice/PracticeHomeScreen';
 import { SessionScreen } from '../screens/practice/SessionScreen';
+import { DailyPromptScreen } from '../screens/practice/DailyPromptScreen';
 import { stackScreenOptions, pushedScreenOptions } from './stackOptions';
 import type { PracticeStackParamList } from './types';
 
@@ -15,6 +16,11 @@ export function PracticeNavigator() {
         name="Session"
         component={SessionScreen}
         options={{ ...pushedScreenOptions, title: 'Session' }}
+      />
+      <Stack.Screen
+        name="DailyPrompt"
+        component={DailyPromptScreen}
+        options={{ ...pushedScreenOptions, title: "Today's question" }}
       />
     </Stack.Navigator>
   );

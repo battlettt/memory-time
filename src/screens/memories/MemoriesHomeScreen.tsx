@@ -127,9 +127,15 @@ export function MemoriesHomeScreen({ navigation }: Props) {
             onPress={() => navigation.navigate('TopicPrompts')}
           />
           <PrimaryButton
+            label="Questions by decade"
+            icon="time-outline"
+            variant="secondary"
+            onPress={() => navigation.navigate('EraPacks')}
+          />
+          <PrimaryButton
             label="Add one by hand"
             icon="add"
-            variant="secondary"
+            variant="ghost"
             onPress={() => navigation.navigate('AddMemory', undefined)}
           />
         </View>
@@ -161,9 +167,11 @@ export function MemoriesHomeScreen({ navigation }: Props) {
             <EmptyState
               icon="albums-outline"
               title="Nothing in the reel yet"
-              body="Not sure where to start? Topic ideas will suggest specific questions worth asking."
-              actionLabel="Get topic ideas"
-              onAction={() => navigation.navigate('TopicPrompts')}
+              // Era questions need no photos and no setup, so they are the one
+              // thing that works on the very first day.
+              body="Questions by decade work straight away, with nothing uploaded — a good half hour together before you've added a single photograph."
+              actionLabel="Browse questions by decade"
+              onAction={() => navigation.navigate('EraPacks')}
             />
           )
         }

@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Image, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -11,6 +11,7 @@ import { useFamily } from '../../state/FamilyContext';
 import { useMemories } from '../../lib/useMemories';
 import { useFamilySettings } from '../../lib/useFamilySettings';
 import { dueMemories, sessionSelection } from '../../lib/srt';
+import { getOrCreateTodaysPrompt, type DailyPrompt } from '../../lib/dailyPrompt';
 import { colors, iconSize, radius, spacing, typography } from '../../lib/theme';
 import type { PracticeStackParamList, MainTabParamList } from '../../navigation/types';
 
@@ -26,6 +27,21 @@ export function PracticeHomeScreen({ navigation }: Props) {
   // memories reads as a chore and gets skipped; eight is a few minutes.
   const limit = settings?.session_size_limit ?? 8;
   const selected = useMemo(() => sessionSelection(memories, limit), [memories, limit]);
+
+  const [dailyPrompt, setDailyPrompt] = useState<DailyPrompt | null>(null);
+  const familyId = current?.family.id ?? null;
+  const memberId = current?.member.id ?? null;
+
+  useEffect(() => {
+    if (!familyId || !memberId) return;
+    let cancelled = false;
+    getOrCreateTodaysPrompt(familyId, memberId)
+      .then((p) => !cancelled && setDailyPrompt(p))
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [familyId, memberId]);
 
   // A face at the top of the screen does more to invite a session than a
   // number does — this is a ritual with a person, not a task queue.
@@ -96,6 +112,24 @@ export function PracticeHomeScreen({ navigation }: Props) {
         </Card>
       )}
 
+      {/* Contributing, not practising. This is the half of the app that keeps
+          the reel from running dry, so it sits on the first screen. */}
+      {dailyPrompt && !dailyPrompt.answered_memory_id && (
+        <Card style={styles.promptCard}>
+          <View style={styles.promptHead}>
+            <Ionicons name="chatbubble-ellipses-outline" size={iconSize.md} color={colors.accentStrong} />
+            <Text style={typography.label}>ONE QUESTION FOR YOU</Text>
+          </View>
+          <Text style={typography.serifLarge}>{dailyPrompt.question}</Text>
+          <PrimaryButton
+            label="Answer out loud"
+            icon="mic"
+            variant="secondary"
+            onPress={() => navigation.navigate('DailyPrompt')}
+          />
+        </Card>
+      )}
+
       {!loading && memories.length > 0 && (
         <PrimaryButton
           label="Look through the album"
@@ -133,4 +167,11 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xs,
   },
   restBody: { color: colors.subtext },
+  promptCard: {
+    padding: spacing.lg,
+    gap: spacing.sm,
+    backgroundColor: colors.accentSoft,
+    borderColor: colors.accentSoft,
+  },
+  promptHead: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
 });

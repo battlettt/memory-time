@@ -1,6 +1,7 @@
 export type PracticeStackParamList = {
   PracticeHome: undefined;
   Session: { memoryIds: string[] };
+  DailyPrompt: undefined;
 };
 
 export type MemoriesStackParamList = {
@@ -9,6 +10,7 @@ export type MemoriesStackParamList = {
   AddMemory: { prefillQuestion?: string } | undefined;
   MemoryDetail: { memoryId: string };
   ImportPhotos: undefined;
+  EraPacks: undefined;
 };
 
 export type LifeStoryStackParamList = {

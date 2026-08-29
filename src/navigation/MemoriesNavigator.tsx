@@ -5,6 +5,7 @@ import { TopicPromptsScreen } from '../screens/memories/TopicPromptsScreen';
 import { AddMemoryScreen } from '../screens/memories/AddMemoryScreen';
 import { MemoryDetailScreen } from '../screens/memories/MemoryDetailScreen';
 import { ImportPhotosScreen } from '../screens/memories/ImportPhotosScreen';
+import { EraPacksScreen } from '../screens/memories/EraPacksScreen';
 import { stackScreenOptions, pushedScreenOptions } from './stackOptions';
 import type { MemoriesStackParamList } from './types';
 
@@ -33,6 +34,11 @@ export function MemoriesNavigator() {
         name="ImportPhotos"
         component={ImportPhotosScreen}
         options={{ ...pushedScreenOptions, title: 'Add from photos' }}
+      />
+      <Stack.Screen
+        name="EraPacks"
+        component={EraPacksScreen}
+        options={{ ...pushedScreenOptions, title: 'By decade' }}
       />
     </Stack.Navigator>
   );
