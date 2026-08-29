@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { MemoriesHomeScreen } from '../screens/memories/MemoriesHomeScreen';
 import { TopicPromptsScreen } from '../screens/memories/TopicPromptsScreen';
 import { AddMemoryScreen } from '../screens/memories/AddMemoryScreen';
+import { MemoryDetailScreen } from '../screens/memories/MemoryDetailScreen';
 import { stackScreenOptions, pushedScreenOptions } from './stackOptions';
 import type { MemoriesStackParamList } from './types';
 
@@ -21,6 +22,11 @@ export function MemoriesNavigator() {
         name="AddMemory"
         component={AddMemoryScreen}
         options={{ ...pushedScreenOptions, title: 'Add a memory' }}
+      />
+      <Stack.Screen
+        name="MemoryDetail"
+        component={MemoryDetailScreen}
+        options={{ ...pushedScreenOptions, title: 'Memory' }}
       />
     </Stack.Navigator>
   );

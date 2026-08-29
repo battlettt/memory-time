@@ -7,6 +7,7 @@ export type MemoriesStackParamList = {
   MemoriesHome: undefined;
   TopicPrompts: undefined;
   AddMemory: { prefillQuestion?: string } | undefined;
+  MemoryDetail: { memoryId: string };
 };
 
 export type LifeStoryStackParamList = {

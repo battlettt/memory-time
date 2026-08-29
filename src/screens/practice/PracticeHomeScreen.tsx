@@ -9,7 +9,8 @@ import { Card } from '../../components/Card';
 import { EmptyState } from '../../components/EmptyState';
 import { useFamily } from '../../state/FamilyContext';
 import { useMemories } from '../../lib/useMemories';
-import { dueMemories } from '../../lib/srt';
+import { useFamilySettings } from '../../lib/useFamilySettings';
+import { dueMemories, sessionSelection } from '../../lib/srt';
 import { colors, iconSize, radius, spacing, typography } from '../../lib/theme';
 import type { PracticeStackParamList, MainTabParamList } from '../../navigation/types';
 
@@ -18,7 +19,13 @@ type Props = NativeStackScreenProps<PracticeStackParamList, 'PracticeHome'>;
 export function PracticeHomeScreen({ navigation }: Props) {
   const { current } = useFamily();
   const { memories, loading } = useMemories(current?.family.id ?? null);
+  const { settings } = useFamilySettings(current?.family.id ?? null);
   const due = useMemo(() => dueMemories(memories), [memories]);
+
+  // A capped session is one somebody will actually finish. Thirty due
+  // memories reads as a chore and gets skipped; eight is a few minutes.
+  const limit = settings?.session_size_limit ?? 8;
+  const selected = useMemo(() => sessionSelection(memories, limit), [memories, limit]);
 
   // A face at the top of the screen does more to invite a session than a
   // number does — this is a ritual with a person, not a task queue.
@@ -51,21 +58,25 @@ export function PracticeHomeScreen({ navigation }: Props) {
           {heroPhoto && <Image source={{ uri: heroPhoto }} style={styles.heroPhoto} resizeMode="cover" />}
           <View style={styles.heroBody}>
             <View style={styles.countRow}>
-              <Text style={styles.count}>{due.length}</Text>
+              <Text style={styles.count}>{selected.length}</Text>
               <Text style={[typography.heading, styles.countLabel]}>
-                {due.length === 1 ? 'memory ready' : 'memories ready'}
+                {selected.length === 1 ? 'memory ready' : 'memories ready'}
               </Text>
             </View>
             <Text style={typography.subtext}>
-              {memories.length - due.length > 0
-                ? `${memories.length - due.length} more will come back around as they're due.`
-                : 'Take them at whatever pace feels right.'}
+              {due.length > selected.length
+                ? `${due.length - selected.length} more are waiting — they’ll come round next time.`
+                : memories.length - due.length > 0
+                  ? `${memories.length - due.length} more will come back around as they're due.`
+                  : 'Take them at whatever pace feels right.'}
             </Text>
             <View style={styles.heroAction}>
               <PrimaryButton
                 label="Start a session"
                 icon="play"
-                onPress={() => navigation.navigate('Session', { memoryIds: due.map((m) => m.id) })}
+                onPress={() =>
+                  navigation.navigate('Session', { memoryIds: selected.map((m) => m.id) })
+                }
               />
             </View>
           </View>
