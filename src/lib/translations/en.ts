@@ -399,6 +399,21 @@ export const en = {
   'topics.title': 'Topic ideas',
   'topics.failed': 'Could not get suggestions right now. Try again in a moment.',
 
+  'auth.checkEmail': 'Check your email',
+  'auth.email': 'Your email',
+  'auth.emailHint': 'We’ll email you a sign-in link instead of asking for a password.',
+  'auth.sendLink': 'Send sign-in link',
+  'auth.yourName': 'Your name',
+  'auth.yourNameHint': 'This is what the rest of the family sees on memories you add.',
+  'auth.groupName': 'Family group name',
+  'auth.groupNamePlaceholder': 'The Rivera Family',
+  'auth.reelFor': 'Who is this reel for?',
+  'auth.reelForPlaceholder': 'Grandma Rosa',
+  'auth.reelForHint': 'Their name appears throughout the app.',
+  'auth.createGroup': 'Create family group',
+  'auth.joinGroup': 'Join family group',
+  'auth.back': 'Back',
+
   // Auth
   'auth.tagline':
     'Collect your parents’ stories while you still can — photographs, their voice, the small things nobody writes down.',

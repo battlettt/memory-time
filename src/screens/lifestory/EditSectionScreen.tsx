@@ -10,6 +10,7 @@ import { useFamily } from '../../state/FamilyContext';
 import { useLifeStory, upsertLifeStorySection } from '../../lib/useLifeStory';
 import { uploadPhoto } from '../../lib/media';
 import { TOPIC_LABELS, type LifeStorySectionKey } from '../../lib/types';
+import { useT } from '../../lib/i18n';
 import { colors, iconSize, radius, shadows, spacing, typography } from '../../lib/theme';
 import type { LifeStoryStackParamList } from '../../navigation/types';
 
@@ -36,6 +37,7 @@ export function EditSectionScreen({ route, navigation }: Props) {
   const [photoUri, setPhotoUri] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(false);
   const [editing, setEditing] = useState(false);
+  const t = useT();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -81,7 +83,7 @@ export function EditSectionScreen({ route, navigation }: Props) {
       });
       navigation.goBack();
     } catch (e: any) {
-      setError(e.message ?? 'Could not save');
+      setError(e.message ?? t('editSection.saveFailed'));
     }
     setSaving(false);
   };
@@ -112,7 +114,7 @@ export function EditSectionScreen({ route, navigation }: Props) {
         <Text style={typography.bodyLarge}>{content}</Text>
         <View style={styles.editAction}>
           <PrimaryButton
-            label="Edit this chapter"
+            label={t('story.edit')}
             icon="create-outline"
             variant="secondary"
             onPress={() => setEditing(true)}
@@ -129,7 +131,7 @@ export function EditSectionScreen({ route, navigation }: Props) {
       <TextField
         multiline
         numberOfLines={6}
-        placeholder="Tell the story here…"
+        placeholder={t('editSection.placeholder')}
         value={content}
         onChangeText={setContent}
       />
@@ -140,10 +142,10 @@ export function EditSectionScreen({ route, navigation }: Props) {
           <Text style={styles.errorText}>{error}</Text>
         </View>
       )}
-      <PrimaryButton label="Save" onPress={handleSave} loading={saving} />
+      <PrimaryButton label={t('common.save')} onPress={handleSave} loading={saving} />
       {!!existing?.content?.trim() && (
         <PrimaryButton
-          label="Cancel"
+          label={t('common.cancel')}
           variant="ghost"
           onPress={() => {
             setContent(existing?.content ?? '');

@@ -386,6 +386,21 @@ export const fr: Catalogue = {
   'topics.title': 'Idées de sujets',
   'topics.failed': 'Impossible d’obtenir des suggestions pour l’instant. Réessayez dans un moment.',
 
+  'auth.checkEmail': 'Consultez vos courriels',
+  'auth.email': 'Votre adresse courriel',
+  'auth.emailHint': 'Nous vous enverrons un lien de connexion plutôt qu’un mot de passe.',
+  'auth.sendLink': 'Envoyer le lien de connexion',
+  'auth.yourName': 'Votre nom',
+  'auth.yourNameHint': 'C’est ce que le reste de la famille verra sur les souvenirs que vous ajoutez.',
+  'auth.groupName': 'Nom du groupe familial',
+  'auth.groupNamePlaceholder': 'La famille Rivera',
+  'auth.reelFor': 'Pour qui est ce recueil ?',
+  'auth.reelForPlaceholder': 'Grand-maman Rosa',
+  'auth.reelForHint': 'Son nom apparaît partout dans l’application.',
+  'auth.createGroup': 'Créer le groupe familial',
+  'auth.joinGroup': 'Rejoindre le groupe',
+  'auth.back': 'Retour',
+
   'auth.tagline':
     'Recueillez les histoires de vos parents tant que c’est possible — les photos, leur voix, les petites choses que personne n’écrit.',
   'auth.startGroup': 'Créer un nouveau groupe',

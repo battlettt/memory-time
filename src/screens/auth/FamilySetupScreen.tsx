@@ -6,6 +6,7 @@ import { PrimaryButton } from '../../components/PrimaryButton';
 import { TextField } from '../../components/TextField';
 import { Card } from '../../components/Card';
 import { useFamily } from '../../state/FamilyContext';
+import { useT } from '../../lib/i18n';
 import { colors, iconSize, radius, spacing, typography } from '../../lib/theme';
 
 export function FamilySetupScreen() {
@@ -14,6 +15,7 @@ export function FamilySetupScreen() {
   const [displayName, setDisplayName] = useState('');
   const [familyName, setFamilyName] = useState('');
   const [careRecipientName, setCareRecipientName] = useState('');
+  const t = useT();
   const [code, setCode] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -35,7 +37,7 @@ export function FamilySetupScreen() {
 
   const handleJoin = async () => {
     if (!displayName || !code) {
-      setError('Both your name and the invite code are needed.');
+      setError(t('auth.needNameAndCode'));
       return;
     }
     setBusy(true);
@@ -62,10 +64,9 @@ export function FamilySetupScreen() {
                 <Ionicons name="add" size={iconSize.lg} color={colors.onPrimary} />
               </View>
               <View style={styles.optionText}>
-                <Text style={typography.heading}>Start a new group</Text>
+                <Text style={typography.heading}>{t('auth.startGroup')}</Text>
                 <Text style={typography.subtext}>
-                  Start collecting for a parent or grandparent, then invite the rest of the family
-                  to add what they remember.
+{t('auth.startGroupBody')}
                 </Text>
               </View>
               <Ionicons name="chevron-forward" size={iconSize.md} color={colors.subtext} />
@@ -80,9 +81,9 @@ export function FamilySetupScreen() {
                 <Ionicons name="people" size={iconSize.lg} color={colors.primary} />
               </View>
               <View style={styles.optionText}>
-                <Text style={typography.heading}>Join with a code</Text>
+                <Text style={typography.heading}>{t('auth.joinTitle')}</Text>
                 <Text style={typography.subtext}>
-                  Someone already started one and sent you a six-letter invite code.
+{t('auth.joinBody')}
                 </Text>
               </View>
               <Ionicons name="chevron-forward" size={iconSize.md} color={colors.subtext} />
@@ -100,8 +101,8 @@ export function FamilySetupScreen() {
       </Text>
 
       <TextField
-        label="Your name"
-        hint="This is what the rest of the family sees on memories you add."
+        label={t('auth.yourName')}
+        hint={t('auth.yourNameHint')}
         value={displayName}
         onChangeText={setDisplayName}
       />
@@ -109,36 +110,36 @@ export function FamilySetupScreen() {
       {mode === 'create' ? (
         <>
           <TextField
-            label="Family group name"
-            placeholder="The Rivera Family"
+            label={t('auth.groupName')}
+            placeholder={t('auth.groupNamePlaceholder')}
             value={familyName}
             onChangeText={setFamilyName}
           />
           <TextField
-            label="Who is this reel for?"
-            placeholder="Grandma Rosa"
-            hint="Their name appears throughout the app."
+            label={t('auth.reelFor')}
+            placeholder={t('auth.reelForPlaceholder')}
+            hint={t('auth.reelForHint')}
             value={careRecipientName}
             onChangeText={setCareRecipientName}
             error={error ?? undefined}
           />
-          <PrimaryButton label="Create family group" onPress={handleCreate} loading={busy} />
+          <PrimaryButton label={t('auth.createGroup')} onPress={handleCreate} loading={busy} />
         </>
       ) : (
         <>
           <TextField
-            label="Invite code"
+            label={t('auth.inviteCode')}
             placeholder="ABC123"
             autoCapitalize="characters"
             value={code}
             onChangeText={setCode}
             error={error ?? undefined}
           />
-          <PrimaryButton label="Join family group" onPress={handleJoin} loading={busy} />
+          <PrimaryButton label={t('auth.joinGroup')} onPress={handleJoin} loading={busy} />
         </>
       )}
 
-      <PrimaryButton label="Back" variant="ghost" onPress={() => setMode('choose')} />
+<PrimaryButton label={t('auth.back')} variant="ghost" onPress={() => setMode('choose')} />
     </Screen>
   );
 }

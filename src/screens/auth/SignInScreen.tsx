@@ -6,11 +6,13 @@ import { PrimaryButton } from '../../components/PrimaryButton';
 import { TextField } from '../../components/TextField';
 import { Card } from '../../components/Card';
 import { useAuth } from '../../state/AuthContext';
+import { useT } from '../../lib/i18n';
 import { colors, iconSize, radius, spacing, typography } from '../../lib/theme';
 
 export function SignInScreen() {
   const { signInWithEmail } = useAuth();
   const [email, setEmail] = useState('');
+  const t = useT();
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -43,15 +45,14 @@ export function SignInScreen() {
             far less painful door to come in through. The practice side is
             there for whoever grows into needing it. */}
         <Text style={[typography.bodyLarge, styles.tagline]}>
-          Collect your parents' stories while you still can — photographs, their voice, the small
-          things nobody writes down.
+{t('auth.tagline')}
         </Text>
       </View>
 
       {sent ? (
         <Card elevation="raised" style={styles.confirmation}>
           <Ionicons name="mail-open-outline" size={iconSize.xl} color={colors.primary} />
-          <Text style={typography.serifLarge}>Check your email</Text>
+          <Text style={typography.serifLarge}>{t('auth.checkEmail')}</Text>
           <Text style={typography.body}>
             We sent a sign-in link to {email}. Tap it and you'll land straight back here — no
             password to remember.
@@ -60,9 +61,9 @@ export function SignInScreen() {
       ) : (
         <>
           <TextField
-            label="Your email"
+            label={t('auth.email')}
             placeholder="you@example.com"
-            hint="We'll email you a sign-in link instead of asking for a password."
+            hint={t('auth.emailHint')}
             autoCapitalize="none"
             autoComplete="email"
             keyboardType="email-address"
@@ -70,7 +71,7 @@ export function SignInScreen() {
             onChangeText={setEmail}
             error={error ?? undefined}
           />
-          <PrimaryButton label="Send sign-in link" onPress={handleSend} loading={sending} />
+          <PrimaryButton label={t('auth.sendLink')} onPress={handleSend} loading={sending} />
         </>
       )}
     </Screen>

@@ -377,6 +377,21 @@ export const es: Catalogue = {
   'topics.title': 'Ideas de temas',
   'topics.failed': 'No se pudieron obtener sugerencias ahora. Inténtelo en un momento.',
 
+  'auth.checkEmail': 'Revise su correo',
+  'auth.email': 'Su correo electrónico',
+  'auth.emailHint': 'Le enviaremos un enlace de acceso en lugar de pedirle una contraseña.',
+  'auth.sendLink': 'Enviar enlace de acceso',
+  'auth.yourName': 'Su nombre',
+  'auth.yourNameHint': 'Esto es lo que verá el resto de la familia en los recuerdos que añada.',
+  'auth.groupName': 'Nombre del grupo familiar',
+  'auth.groupNamePlaceholder': 'La familia Rivera',
+  'auth.reelFor': '¿Para quién es esta colección?',
+  'auth.reelForPlaceholder': 'Abuela Rosa',
+  'auth.reelForHint': 'Su nombre aparece por toda la aplicación.',
+  'auth.createGroup': 'Crear grupo familiar',
+  'auth.joinGroup': 'Unirse al grupo',
+  'auth.back': 'Atrás',
+
   'auth.tagline':
     'Recoja las historias de sus padres mientras pueda — las fotos, su voz, las cosas pequeñas que nadie escribe.',
   'auth.startGroup': 'Crear un grupo nuevo',
