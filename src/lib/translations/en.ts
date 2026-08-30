@@ -91,6 +91,8 @@ export const en = {
   'voice.failed': 'Couldn’t play this one',
   'voice.retry': 'Tap to try again',
   'voice.recordedBy': 'Recorded by {name}',
+  'voice.a11yPause': 'Pause voice note',
+  'voice.a11yPlay': 'Play voice note from {name}',
 
   // Voice recorder
   'recorder.label': 'Voice note',
@@ -98,6 +100,7 @@ export const en = {
   'recorder.recording': 'Recording…',
   'recorder.saved': 'Voice note saved',
   'recorder.start': 'Record a voice note',
+  'recorder.stop': 'Stop recording',
   'recorder.again': 'Record again',
   'recorder.remove': 'Remove voice note',
   'recorder.live': 'Writing it down as you speak',
@@ -376,6 +379,21 @@ export const en = {
   'handoff.empty.title': 'Nothing to hand over yet',
   'handoff.empty.body':
     'Write a chapter or two of {name}’s story, or mark a few memories as always-ask, and this page assembles itself from those.',
+
+  'photo.add': 'Add a photo',
+  'photo.addHint': 'A face makes a memory much easier to place',
+  'photo.change': 'Change photo',
+  'photo.remove': 'Remove photo',
+  'topics.heading': 'What should we add?',
+  'topics.thinking': 'Thinking of questions…',
+  'editSection.placeholder': 'Tell the story here…',
+  'editSection.saveFailed': 'Could not save',
+  'chapterPrompt.early_life': 'Where did they grow up, and what was the house like?',
+  'chapterPrompt.career': 'What did they do for work, and what were they proud of?',
+  'chapterPrompt.family': 'Who are the people closest to them, and how did they meet?',
+  'chapterPrompt.personality': 'What are they like — funny, stubborn, generous, quiet?',
+  'chapterPrompt.favorites': 'Favourite music, food, places, things they always came back to.',
+  'chapterPrompt.stories': 'The story this family tells over and over again.',
 
   // Topic prompts
   'topics.title': 'Topic ideas',

@@ -13,6 +13,7 @@ import { useMemories } from '../../lib/useMemories';
 import { useFamilyMembers } from '../../lib/useFamilyMembers';
 import { formatOccurred } from '../../lib/dates';
 import { languageLabel } from '../../lib/languages';
+import { useT } from '../../lib/i18n';
 import { colors, iconSize, radius, spacing, typography } from '../../lib/theme';
 import type { MemoriesStackParamList } from '../../navigation/types';
 import type { Memory, MemoryCategory } from '../../lib/types';
@@ -31,6 +32,7 @@ export function MemoriesHomeScreen({ navigation }: Props) {
   const { memories } = useMemories(familyId);
   const { nameFor } = useFamilyMembers(familyId);
   const [query, setQuery] = useState('');
+  const t = useT();
 
   const name = current?.family.care_recipient_name ?? 'them';
 
@@ -52,7 +54,7 @@ export function MemoriesHomeScreen({ navigation }: Props) {
     return (
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={`Open memory: ${item.question}`}
+        accessibilityLabel={t('memories.open', { question: item.question })}
         onPress={() => navigation.navigate('MemoryDetail', { memoryId: item.id })}
       >
         {({ pressed }) => (
@@ -86,7 +88,7 @@ export function MemoriesHomeScreen({ navigation }: Props) {
                 {item.voice_url && (
                   <>
                     <Ionicons name="mic" size={14} color={colors.accent} style={styles.micIcon} />
-                    <Text style={typography.caption}>voice note</Text>
+                    <Text style={typography.caption}>{t('memories.voiceNote')}</Text>
                   </>
                 )}
               </View>
@@ -98,7 +100,7 @@ export function MemoriesHomeScreen({ navigation }: Props) {
                     color={colors.accentStrong}
                   />
                   <Text style={styles.badgeText}>
-                    {resting ? 'Resting — still in the album' : 'Set aside for now'}
+{resting ? t('memories.resting') : t('memories.setAside')}
                   </Text>
                 </View>
               )}
@@ -113,31 +115,31 @@ export function MemoriesHomeScreen({ navigation }: Props) {
     <Screen scroll={false}>
       <View style={styles.header}>
         <ScreenHeader
-          title="Memories"
-          subtitle={`The questions and photos ${name} practises with.`}
+          title={t('memories.title')}
+          subtitle={t('memories.subtitle', { name })}
         />
         <View style={styles.actions}>
           {/* Batch import leads: typing memories one at a time is the reason
               families stop contributing after the first week. */}
           <PrimaryButton
-            label="Add from photos"
+            label={t('memories.import')}
             icon="images"
             onPress={() => navigation.navigate('ImportPhotos')}
           />
           <PrimaryButton
-            label="Get topic ideas"
+            label={t('memories.topicIdeas')}
             icon="sparkles"
             variant="secondary"
             onPress={() => navigation.navigate('TopicPrompts')}
           />
           <PrimaryButton
-            label="Questions by decade"
+            label={t('memories.byDecade')}
             icon="time-outline"
             variant="secondary"
             onPress={() => navigation.navigate('EraPacks')}
           />
           <PrimaryButton
-            label="Add one by hand"
+            label={t('memories.addByHand')}
             icon="add"
             variant="ghost"
             onPress={() => navigation.navigate('AddMemory', undefined)}
@@ -145,7 +147,7 @@ export function MemoriesHomeScreen({ navigation }: Props) {
         </View>
         {memories.length > 6 && (
           <TextField
-            placeholder="Search memories"
+            placeholder={t('memories.search')}
             value={query}
             onChangeText={setQuery}
             autoCorrect={false}
@@ -164,17 +166,17 @@ export function MemoriesHomeScreen({ navigation }: Props) {
           query.trim() ? (
             <EmptyState
               icon="search-outline"
-              title="Nothing matches that"
-              body={`No memory mentions “${query.trim()}”. Try a name or a place.`}
+              title={t('memories.noMatch.title')}
+              body={t('memories.noMatch.body', { query: query.trim() })}
             />
           ) : (
             <EmptyState
               icon="albums-outline"
-              title="Nothing in the reel yet"
+              title={t('memories.empty.title')}
               // Era questions need no photos and no setup, so they are the one
               // thing that works on the very first day.
-              body="Questions by decade work straight away, with nothing uploaded — a good half hour together before you've added a single photograph."
-              actionLabel="Browse questions by decade"
+              body={t('memories.empty.body')}
+              actionLabel={t('memories.empty.action')}
               onAction={() => navigation.navigate('EraPacks')}
             />
           )

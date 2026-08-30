@@ -7,7 +7,8 @@ import { Card } from '../../components/Card';
 import { ProgressBar } from '../../components/ProgressBar';
 import { useFamily } from '../../state/FamilyContext';
 import { useLifeStory } from '../../lib/useLifeStory';
-import { LIFE_STORY_SECTION_KEYS, TOPIC_LABELS, type LifeStorySectionKey } from '../../lib/types';
+import { LIFE_STORY_SECTION_KEYS, type LifeStorySectionKey } from '../../lib/types';
+import { useT } from '../../lib/i18n';
 import { colors, iconSize, radius, spacing, typography } from '../../lib/theme';
 import type { LifeStoryStackParamList } from '../../navigation/types';
 
@@ -25,6 +26,7 @@ const SECTION_ICON: Record<LifeStorySectionKey, keyof typeof Ionicons.glyphMap> 
 export function LifeStoryHomeScreen({ navigation }: Props) {
   const { current } = useFamily();
   const { sections } = useLifeStory(current?.family.id ?? null);
+  const t = useT();
 
   const name = current?.family.care_recipient_name ?? 'them';
   const filled = LIFE_STORY_SECTION_KEYS.filter((key) =>
@@ -34,18 +36,17 @@ export function LifeStoryHomeScreen({ navigation }: Props) {
   return (
     <Screen>
       <View style={styles.heading}>
-        <Text style={typography.label}>THEIR STORY</Text>
-        <Text style={typography.display}>Who {name} really is</Text>
+        <Text style={typography.label}>{t('story.eyebrow')}</Text>
+        <Text style={typography.display}>{t('story.title', { name })}</Text>
         <Text style={typography.subtext}>
-          A living portrait, not a quiz — for family, a new caregiver, or a grandchild who never
-          got to know them properly.
+{t('story.subtitle')}
         </Text>
       </View>
 
       <Card style={styles.progressCard}>
         <View style={styles.progressRow}>
           <Text style={typography.bodyStrong}>
-            {filled} of {LIFE_STORY_SECTION_KEYS.length} chapters written
+{t('story.progress', { done: filled, total: LIFE_STORY_SECTION_KEYS.length })}
           </Text>
           {filled === LIFE_STORY_SECTION_KEYS.length && (
             <Ionicons name="checkmark-circle" size={iconSize.md} color={colors.success} />
@@ -53,7 +54,7 @@ export function LifeStoryHomeScreen({ navigation }: Props) {
         </View>
         <ProgressBar
           value={filled / LIFE_STORY_SECTION_KEYS.length}
-          label={`${filled} of ${LIFE_STORY_SECTION_KEYS.length} chapters written`}
+          label={t('story.progress', { done: filled, total: LIFE_STORY_SECTION_KEYS.length })}
         />
       </Card>
 
@@ -76,12 +77,12 @@ export function LifeStoryHomeScreen({ navigation }: Props) {
                   </View>
                 )}
                 <View style={styles.cardBody}>
-                  <Text style={typography.heading}>{TOPIC_LABELS[key]}</Text>
+                  <Text style={typography.heading}>{t(`chapter.${key}` as never)}</Text>
                   <Text
                     style={[typography.subtext, !written && styles.placeholder]}
                     numberOfLines={2}
                   >
-                    {section?.content || 'Not written yet — tap to add'}
+                    {section?.content || t('story.notWritten')}
                   </Text>
                 </View>
                 <Ionicons name="chevron-forward" size={iconSize.md} color={colors.subtext} />

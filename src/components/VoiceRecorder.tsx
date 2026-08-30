@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Audio } from 'expo-av';
 import { PrimaryButton } from './PrimaryButton';
 import { useLiveTranscription } from '../lib/transcription';
+import { useT } from '../lib/i18n';
 import { colors, iconSize, radius, spacing, typography } from '../lib/theme';
 
 interface Props {
@@ -22,6 +23,7 @@ interface Props {
 export function VoiceRecorder({ uri, onChange, onTranscript, lang }: Props) {
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
   const [isRecording, setIsRecording] = useState(false);
+  const t = useT();
   const transcription = useLiveTranscription(lang || 'en-GB');
 
   const start = async () => {
@@ -62,11 +64,11 @@ export function VoiceRecorder({ uri, onChange, onTranscript, lang }: Props) {
         />
         <View style={styles.statusText}>
           <Text style={typography.bodyStrong}>
-            {isRecording ? 'Recording…' : uri ? 'Voice note saved' : 'Voice note'}
+{isRecording ? t('recorder.recording') : uri ? t('recorder.saved') : t('recorder.label')}
           </Text>
           {!uri && !isRecording && (
             <Text style={typography.caption}>
-              Optional — a familiar voice is a stronger cue than text
+{t('recorder.hint')}
             </Text>
           )}
         </View>
@@ -74,19 +76,19 @@ export function VoiceRecorder({ uri, onChange, onTranscript, lang }: Props) {
 
       {showLive && (
         <View style={styles.live}>
-          <Text style={typography.caption}>Writing it down as you speak</Text>
+          <Text style={typography.caption}>{t('recorder.live')}</Text>
           <Text style={typography.body}>{transcription.transcript}</Text>
         </View>
       )}
 
       <PrimaryButton
-        label={isRecording ? 'Stop recording' : uri ? 'Record again' : 'Record a voice note'}
+label={isRecording ? t('recorder.stop') : uri ? t('recorder.again') : t('recorder.start')}
         icon={isRecording ? 'stop' : 'mic'}
         variant="secondary"
         onPress={isRecording ? stop : start}
       />
       {uri && !isRecording && (
-        <PrimaryButton label="Remove voice note" variant="ghost" onPress={() => onChange(null)} />
+        <PrimaryButton label={t('recorder.remove')} variant="ghost" onPress={() => onChange(null)} />
       )}
     </View>
   );

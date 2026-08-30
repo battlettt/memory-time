@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Audio } from 'expo-av';
 import { saveElderRecording } from '../lib/elderRecordings';
+import { useT } from '../lib/i18n';
 import { colors, iconSize, minTapTarget, radius, spacing, typography } from '../lib/theme';
 
 interface Props {
@@ -23,6 +24,7 @@ type State = 'idle' | 'recording' | 'saving' | 'saved' | 'failed';
  * talking about their own life.
  */
 export function ElderAnswerRecorder({ familyId, memoryId, personName }: Props) {
+  const t = useT();
   const [state, setState] = useState<State>('idle');
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
 
@@ -58,11 +60,11 @@ export function ElderAnswerRecorder({ familyId, memoryId, personName }: Props) {
   };
 
   const label = {
-    idle: `Record ${personName} telling it`,
-    recording: 'Recording — tap to stop',
-    saving: 'Saving…',
-    saved: 'Saved in their own voice',
-    failed: "Couldn't save that — tap to retry",
+    idle: t('elderRec.idle', { name: personName }),
+    recording: t('elderRec.recording'),
+    saving: t('elderRec.saving'),
+    saved: t('elderRec.saved'),
+    failed: t('elderRec.failed'),
   }[state];
 
   const icon = {

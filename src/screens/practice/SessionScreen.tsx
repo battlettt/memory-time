@@ -21,6 +21,7 @@ import {
   reviewOnlyPool,
 } from '../../lib/srt';
 import { formatOccurred } from '../../lib/dates';
+import { useI18n } from '../../lib/i18n';
 import { colors, iconSize, radius, shadows, spacing, typography } from '../../lib/theme';
 import type { PracticeStackParamList } from '../../navigation/types';
 
@@ -35,10 +36,10 @@ type Phase = 'question' | 'revealed' | 'done';
  * the answer — because being nudged into recalling something yourself is both
  * better practice and far less deflating than being told.
  */
-function hintFor(answer: string): string {
+function hintLetter(answer: string): string {
   const firstWord = answer.trim().split(/\s+/)[0] ?? '';
   const letter = firstWord.charAt(0).toUpperCase();
-  return letter ? `It starts with “${letter}”` : 'Take your time';
+  return letter;
 }
 
 export function SessionScreen({ route, navigation }: Props) {
@@ -46,6 +47,7 @@ export function SessionScreen({ route, navigation }: Props) {
   const { memories } = useMemories(current?.family.id ?? null);
   const { nameFor } = useFamilyMembers(current?.family.id ?? null);
   const { settings } = useFamilySettings();
+  const { t, tCount } = useI18n();
   const { memoryIds } = route.params;
 
   const queueRef = useRef(new SessionQueue(memoryIds));
@@ -137,7 +139,7 @@ export function SessionScreen({ route, navigation }: Props) {
     // Deliberately not counted as an answer and not fed to the pacer: this was
     // not a failure of recall, and it should not drag the session's mood down.
     queueRef.current.recordAnswer(true);
-    setPacingNotice('Set aside for now — it won’t come up again for a few weeks.');
+    setPacingNotice(t('session.setAside'));
     advance();
   };
 
@@ -170,14 +172,14 @@ export function SessionScreen({ route, navigation }: Props) {
     }
 
     if (pacerRef.current.shouldEndSession()) {
-      setPacingNotice('We stopped early today — a short session is still a good one.');
+      setPacingNotice(t('session.stoppedEarly'));
       finish(true);
       return;
     }
 
     if (pacerRef.current.shouldSwitchToReviewOnly()) {
       queueRef.current.filterRemaining((id) => reviewOnlyIds.has(id));
-      setPacingNotice('Switched to more familiar memories for the rest of this session.');
+      setPacingNotice(t('session.switchedFamiliar'));
     }
 
     advance();
@@ -190,13 +192,13 @@ export function SessionScreen({ route, navigation }: Props) {
           <View style={styles.doneIcon}>
             <Ionicons name="checkmark" size={42} color={colors.onSuccess} />
           </View>
-          <Text style={typography.display}>Session complete</Text>
+          <Text style={typography.display}>{t('session.complete')}</Text>
           <Text style={[typography.bodyLarge, styles.doneCount]}>
-            {answeredCount} {answeredCount === 1 ? 'memory' : 'memories'} practised together.
+{tCount('session.practised', answeredCount)}
           </Text>
           {pacingNotice && <Text style={[typography.subtext, styles.centered]}>{pacingNotice}</Text>}
         </View>
-        <PrimaryButton label="Done" onPress={() => navigation.goBack()} />
+        <PrimaryButton label={t('common.done')} onPress={() => navigation.goBack()} />
       </Screen>
     );
   }
@@ -204,7 +206,7 @@ export function SessionScreen({ route, navigation }: Props) {
   if (!currentMemory) {
     return (
       <Screen>
-        <Text style={typography.body}>Loading…</Text>
+        <Text style={typography.body}>{t('common.loading')}</Text>
       </Screen>
     );
   }
@@ -215,9 +217,9 @@ export function SessionScreen({ route, navigation }: Props) {
     <Screen scroll={false}>
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.progressBlock}>
-          <ProgressBar value={progress} label={`${remaining} memories remaining in this session`} />
+          <ProgressBar value={progress} label={t('session.remaining', { count: remaining })} />
           <Text style={typography.caption}>
-            {remaining} {remaining === 1 ? 'memory' : 'memories'} left
+{tCount('session.left', remaining)}
           </Text>
         </View>
 
@@ -239,7 +241,7 @@ export function SessionScreen({ route, navigation }: Props) {
           <View style={styles.buttonRow}>
             {cueLevel === 0 ? (
               <PrimaryButton
-                label="Give a hint"
+                label={t('session.hint')}
                 icon="bulb-outline"
                 variant="secondary"
                 onPress={() => setCueLevel(1)}
@@ -247,10 +249,14 @@ export function SessionScreen({ route, navigation }: Props) {
             ) : (
               <View style={styles.hint}>
                 <Ionicons name="bulb-outline" size={iconSize.sm} color={colors.accentStrong} />
-                <Text style={styles.hintText}>{hintFor(currentMemory.answer)}</Text>
+                <Text style={styles.hintText}>
+                  {hintLetter(currentMemory.answer)
+                    ? t('session.hintText', { letter: hintLetter(currentMemory.answer) })
+                    : t('session.hintFallback')}
+                </Text>
               </View>
             )}
-            <PrimaryButton label="Reveal answer" onPress={() => setPhase('revealed')} />
+            <PrimaryButton label={t('session.reveal')} onPress={() => setPhase('revealed')} />
           </View>
         )}
 
@@ -269,7 +275,9 @@ export function SessionScreen({ route, navigation }: Props) {
               )}
               <View style={styles.attribution}>
                 <Ionicons name="heart" size={iconSize.sm} color={colors.accent} />
-                <Text style={typography.subtext}>Added by {nameFor(currentMemory.added_by)}</Text>
+                <Text style={typography.subtext}>
+                  {t('common.addedBy', { name: nameFor(currentMemory.added_by) })}
+                </Text>
               </View>
               {current && (
                 <ElderAnswerRecorder
@@ -282,18 +290,18 @@ export function SessionScreen({ route, navigation }: Props) {
 
             <View style={styles.buttonRow}>
               <PrimaryButton
-                label="They remembered"
+                label={t('session.remembered')}
                 icon="checkmark-circle-outline"
                 variant="success"
                 onPress={() => handleAnswer(true)}
               />
               <PrimaryButton
-                label="Needed a hand"
+                label={t('session.neededHand')}
                 variant="secondary"
                 onPress={() => handleAnswer(false)}
               />
               <PrimaryButton
-                label="Not today"
+                label={t('session.notToday')}
                 icon="leaf-outline"
                 variant="ghost"
                 onPress={handleNotToday}

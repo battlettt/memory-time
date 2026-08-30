@@ -6,6 +6,7 @@ import { Screen } from '../../components/Screen';
 import { Card } from '../../components/Card';
 import { Chip } from '../../components/Chip';
 import { useFamily } from '../../state/FamilyContext';
+import { useT } from '../../lib/i18n';
 import { generateTopicPrompts } from '../../lib/aiPrompts';
 import { LIFE_STORY_SECTION_KEYS, TOPIC_LABELS } from '../../lib/types';
 import { colors, iconSize, radius, spacing, typography } from '../../lib/theme';
@@ -15,6 +16,7 @@ type Props = NativeStackScreenProps<MemoriesStackParamList, 'TopicPrompts'>;
 
 export function TopicPromptsScreen({ navigation }: Props) {
   const { current } = useFamily();
+  const t = useT();
   const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
   const [prompts, setPrompts] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
@@ -32,7 +34,7 @@ export function TopicPromptsScreen({ navigation }: Props) {
       const results = await generateTopicPrompts(current.family.id, topic);
       setPrompts(results);
     } catch {
-      setError('Could not get suggestions right now. Try again in a moment.');
+      setError(t('topics.failed'));
     }
     setLoading(false);
   };
@@ -44,7 +46,7 @@ export function TopicPromptsScreen({ navigation }: Props) {
           <Ionicons name="sparkles" size={iconSize.md} color={colors.onAccent} />
         </View>
         <View style={styles.headerText}>
-          <Text style={typography.title}>What should we add?</Text>
+          <Text style={typography.title}>{t('topics.heading')}</Text>
           <Text style={typography.subtext}>
             Pick a topic and we'll suggest specific questions about {name} — the kind that are
             easier to answer than "tell me about their life".
@@ -66,7 +68,7 @@ export function TopicPromptsScreen({ navigation }: Props) {
       {loading && (
         <View style={styles.loadingRow}>
           <ActivityIndicator color={colors.primary} />
-          <Text style={typography.subtext}>Thinking of questions…</Text>
+          <Text style={typography.subtext}>{t('topics.thinking')}</Text>
         </View>
       )}
       {error && (

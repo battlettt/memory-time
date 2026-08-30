@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Audio } from 'expo-av';
+import { useT } from '../lib/i18n';
 import { colors, iconSize, minTapTarget, radius, spacing, typography } from '../lib/theme';
 
 interface Props {
@@ -18,6 +19,7 @@ interface Props {
  * so playback belongs anywhere an answer is revealed or browsed.
  */
 export function VoicePlayer({ uri, attribution }: Props) {
+  const t = useT();
   const soundRef = useRef<Audio.Sound | null>(null);
   const [playing, setPlaying] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -75,7 +77,9 @@ export function VoicePlayer({ uri, attribution }: Props) {
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={
-        playing ? 'Pause voice note' : `Play voice note${attribution ? ` from ${attribution}` : ''}`
+        playing
+          ? t('voice.a11yPause')
+          : t('voice.a11yPlay', { name: attribution ?? t('common.aFamilyMember') })
       }
       onPress={toggle}
       style={({ pressed }) => [styles.wrap, pressed && styles.pressed]}
@@ -93,12 +97,16 @@ export function VoicePlayer({ uri, attribution }: Props) {
       </View>
       <View style={styles.text}>
         <Text style={typography.bodyStrong}>
-          {failed ? "Couldn't play this one" : playing ? 'Playing…' : 'Hear it in their voice'}
+{failed ? t('voice.failed') : playing ? t('voice.playing') : t('voice.play')}
         </Text>
         {failed ? (
-          <Text style={typography.caption}>Tap to try again</Text>
+          <Text style={typography.caption}>{t('voice.retry')}</Text>
         ) : (
-          attribution && <Text style={typography.caption}>Recorded by {attribution}</Text>
+          attribution && (
+            <Text style={typography.caption}>
+              {t('voice.recordedBy', { name: attribution })}
+            </Text>
+          )
         )}
       </View>
     </Pressable>
