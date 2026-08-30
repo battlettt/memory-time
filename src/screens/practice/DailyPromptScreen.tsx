@@ -11,7 +11,6 @@ import { useFamily } from '../../state/FamilyContext';
 import { addMemory } from '../../lib/useMemories';
 import { uploadVoiceNote } from '../../lib/media';
 import { getOrCreateTodaysPrompt, markPromptAnswered, type DailyPrompt } from '../../lib/dailyPrompt';
-import { supabase } from '../../lib/supabase';
 import { useT } from '../../lib/i18n';
 import { colors, iconSize, radius, spacing, typography } from '../../lib/theme';
 import type { PracticeStackParamList } from '../../navigation/types';
@@ -58,7 +57,7 @@ export function DailyPromptScreen({ navigation }: Props) {
     try {
       const voicePath = voiceUri ? await uploadVoiceNote(current.family.id, voiceUri) : null;
 
-      await addMemory({
+      const memoryId = await addMemory({
         familyId: current.family.id,
         memberId: current.member.id,
         category: 'identity',
@@ -72,17 +71,7 @@ export function DailyPromptScreen({ navigation }: Props) {
         needsReview: !answer.trim(),
       });
 
-      // Find the row we just wrote so the prompt can point at it.
-      const { data: saved } = await supabase
-        .from('memories')
-        .select('id')
-        .eq('family_id', current.family.id)
-        .eq('question', prompt.question)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (saved?.id) await markPromptAnswered(prompt.id, saved.id);
+      if (memoryId) await markPromptAnswered(prompt.id, memoryId);
 
       navigation.goBack();
     } catch (e: any) {

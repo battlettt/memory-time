@@ -9,7 +9,6 @@ import { PrimaryButton } from '../../components/PrimaryButton';
 import { useFamily } from '../../state/FamilyContext';
 import { addMemory } from '../../lib/useMemories';
 import { saveElderRecording } from '../../lib/elderRecordings';
-import { supabase } from '../../lib/supabase';
 import { useT } from '../../lib/i18n';
 import { colors, iconSize, radius, spacing, typography } from '../../lib/theme';
 import type { PracticeStackParamList } from '../../navigation/types';
@@ -89,7 +88,7 @@ export function GrandchildScreen({ navigation }: Props) {
       setRecording(null);
       if (!uri) throw new Error('nothing recorded');
 
-      await addMemory({
+      const memoryId = await addMemory({
         familyId: current.family.id,
         memberId: current.member.id,
         category: 'identity',
@@ -99,19 +98,10 @@ export function GrandchildScreen({ navigation }: Props) {
         needsReview: true,
       });
 
-      const { data: saved } = await supabase
-        .from('memories')
-        .select('id')
-        .eq('family_id', current.family.id)
-        .eq('question', question)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (saved?.id) {
+      if (memoryId) {
         await saveElderRecording({
           familyId: current.family.id,
-          memoryId: saved.id,
+          memoryId,
           localUri: uri,
         });
       }

@@ -23,6 +23,8 @@ export const fr: Catalogue = {
   'common.sharedBy': 'Partagé par {name}',
   'common.aFamilyMember': 'Un membre de la famille',
   'common.somethingWrong': 'Une erreur est survenue',
+  'common.saveFailed': 'Cela n’a pas été enregistré. Vérifiez votre connexion et réessayez.',
+  'session.saveFailed': 'Cette réponse n’a pas été enregistrée — le calendrier peut être décalé.',
 
   'today.eyebrow': 'AUJOURD’HUI',
   'today.title': 'Un moment avec {name}',

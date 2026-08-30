@@ -139,11 +139,25 @@ export function SettingsScreen({ navigation }: Props) {
     setTimeout(() => setCopied(null), 2500);
   };
 
+  // Every preference write goes through here. These used to be
+  // `.catch(() => {})`, so a failed save just snapped the switch back with no
+  // explanation — worst of all for memorial mode, where the family would be
+  // left believing reminders were off while they carried on arriving.
+  const save = (patch: Parameters<typeof update>[0]) =>
+    update(patch).catch((e: any) => setError(e?.message ?? t('common.saveFailed')));
+
   const initial = current?.member.display_name?.trim()?.[0]?.toUpperCase() ?? '?';
 
   return (
     <Screen>
       <ScreenHeader title={t('settings.title')} />
+
+      {error && (
+        <View style={styles.error}>
+          <Ionicons name="alert-circle-outline" size={iconSize.md} color={colors.destructive} />
+          <Text style={styles.errorText}>{error}</Text>
+        </View>
+      )}
 
       {current && (
         <Card style={[styles.card, styles.profileCard]}>
@@ -194,12 +208,6 @@ export function SettingsScreen({ navigation }: Props) {
             <Text style={typography.caption}>{t('settings.inviteExpiry')}</Text>
           </>
         )}
-        {error && (
-          <View style={styles.error}>
-            <Ionicons name="alert-circle-outline" size={iconSize.md} color={colors.destructive} />
-            <Text style={styles.errorText}>{error}</Text>
-          </View>
-        )}
       </Card>
 
       <Card style={styles.card}>
@@ -243,7 +251,7 @@ export function SettingsScreen({ navigation }: Props) {
           </View>
           <Switch
             value={settings?.large_text ?? false}
-            onValueChange={(v) => update({ large_text: v }).catch(() => {})}
+            onValueChange={(v) => save({ large_text: v })}
             trackColor={{ true: colors.primary, false: colors.borderStrong }}
           />
         </View>
@@ -259,7 +267,7 @@ export function SettingsScreen({ navigation }: Props) {
           </View>
           <Switch
             value={settings?.daily_prompt_enabled ?? true}
-            onValueChange={(v) => update({ daily_prompt_enabled: v }).catch(() => {})}
+            onValueChange={(v) => save({ daily_prompt_enabled: v })}
             trackColor={{ true: colors.primary, false: colors.borderStrong }}
           />
         </View>
@@ -298,7 +306,7 @@ export function SettingsScreen({ navigation }: Props) {
                 key={n}
                 label={`${n}`}
                 selected={(settings?.session_size_limit ?? 8) === n}
-                onPress={() => update({ session_size_limit: n }).catch(() => {})}
+                onPress={() => save({ session_size_limit: n })}
               />
             ))}
           </View>
@@ -340,7 +348,7 @@ label={Platform.OS === 'web' ? t('settings.copy') : t('settings.share')}
               <PrimaryButton
                 label={t('settings.turnOff')}
                 variant="ghost"
-                onPress={() => revokeContributionLink(link.id).then(refreshLinks).catch(() => {})}
+                onPress={() => revokeContributionLink(link.id).then(refreshLinks).catch((e: any) => setError(e?.message ?? t('common.saveFailed')))}
               />
             </View>
           </View>
@@ -373,16 +381,14 @@ label={Platform.OS === 'web' ? t('settings.copy') : t('settings.share')}
           variant="ghost"
           onPress={() => {
             if (settings?.memorial_mode) {
-              update({ memorial_mode: false, memorial_since: null }).catch(() => {});
+              save({ memorial_mode: false, memorial_since: null });
               return;
             }
             if (!confirmMemorial) {
               setConfirmMemorial(true);
               return;
             }
-            update({ memorial_mode: true, memorial_since: new Date().toISOString() }).catch(
-              () => {}
-            );
+save({ memorial_mode: true, memorial_since: new Date().toISOString() });
             setConfirmMemorial(false);
           }}
         />

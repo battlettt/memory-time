@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
+import { clearFamilyCache } from '../lib/cache';
+import { clearSignedUrlCache } from '../lib/media';
 
 interface AuthContextValue {
   session: Session | null;
@@ -40,6 +42,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { error: error?.message ?? null };
       },
       signOut: async () => {
+        // Clear the local copy before dropping the session. This app is meant
+        // for a tablet in a care home, which is a device other people sign
+        // into; leaving a family's memories in local storage would be a
+        // quiet breach every time somebody handed it over.
+        await clearFamilyCache();
+        clearSignedUrlCache();
         await supabase.auth.signOut();
       },
     }),

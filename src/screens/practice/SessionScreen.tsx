@@ -64,6 +64,7 @@ export function SessionScreen({ route, navigation }: Props) {
   const [currentId, setCurrentId] = useState<string | null>(queueRef.current.current());
   const [pacingNotice, setPacingNotice] = useState<string | null>(null);
   const [answeredCount, setAnsweredCount] = useState(0);
+  const [saveFailed, setSaveFailed] = useState(false);
 
   const familyId = current?.family.id ?? null;
   const memberId = current?.member.id ?? null;
@@ -134,7 +135,7 @@ export function SessionScreen({ route, navigation }: Props) {
       outcome: 'distressing',
     }).catch(() => {});
 
-    updateMemory(memory.id, pauseAfterDistress()).catch(() => {});
+    updateMemory(memory.id, pauseAfterDistress()).catch(() => setSaveFailed(true));
 
     // Deliberately not counted as an answer and not fed to the pacer: this was
     // not a failure of recall, and it should not drag the session's mood down.
@@ -168,7 +169,7 @@ export function SessionScreen({ route, navigation }: Props) {
         new Date(),
         settings?.retire_after_misses
       );
-      recordSrtResult(memory.id, update).catch(() => {});
+      recordSrtResult(memory.id, update).catch(() => setSaveFailed(true));
     }
 
     if (pacerRef.current.shouldEndSession()) {
@@ -222,6 +223,13 @@ export function SessionScreen({ route, navigation }: Props) {
 {tCount('session.left', remaining)}
           </Text>
         </View>
+
+        {saveFailed && (
+          <View style={styles.notice}>
+            <Ionicons name="cloud-offline-outline" size={iconSize.sm} color={colors.destructive} />
+            <Text style={styles.noticeText}>{t('session.saveFailed')}</Text>
+          </View>
+        )}
 
         {pacingNotice && phase === 'question' && (
           <View style={styles.notice}>

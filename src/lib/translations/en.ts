@@ -27,6 +27,8 @@ export const en = {
   'common.sharedBy': 'Shared by {name}',
   'common.aFamilyMember': 'A family member',
   'common.somethingWrong': 'Something went wrong',
+  'common.saveFailed': 'That didn’t save. Check your connection and try again.',
+  'session.saveFailed': 'That answer didn’t save — the schedule may be out of date.',
 
   // Today
   'today.eyebrow': 'TODAY',

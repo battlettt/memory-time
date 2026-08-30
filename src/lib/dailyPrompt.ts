@@ -85,9 +85,14 @@ export async function getOrCreateTodaysPrompt(
   const seed = [...`${familyId}${shownOn}`].reduce((a, c) => a + c.charCodeAt(0), 0);
   const question = pool[seed % pool.length];
 
+  // shown_on must be sent explicitly. The column defaults to current_date,
+  // which Postgres evaluates in UTC — so for anyone west of Greenwich, an
+  // evening prompt was stored under tomorrow's date while every lookup here
+  // used the local one. The row could never be found again on the day it
+  // belonged to, and "already answered" leaked into the following day.
   const { data: created, error } = await supabase
     .from('daily_prompts')
-    .insert({ family_id: familyId, member_id: memberId, question, source: 'era' })
+    .insert({ family_id: familyId, member_id: memberId, question, source: 'era', shown_on: shownOn })
     .select('*')
     .maybeSingle();
 

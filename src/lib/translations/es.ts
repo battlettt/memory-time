@@ -24,6 +24,8 @@ export const es: Catalogue = {
   'common.sharedBy': 'Compartido por {name}',
   'common.aFamilyMember': 'Un familiar',
   'common.somethingWrong': 'Algo salió mal',
+  'common.saveFailed': 'No se guardó. Revise su conexión e inténtelo de nuevo.',
+  'session.saveFailed': 'Esa respuesta no se guardó — el calendario puede quedar desfasado.',
 
   'today.eyebrow': 'HOY',
   'today.title': 'Un rato con {name}',

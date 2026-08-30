@@ -112,8 +112,16 @@ export interface NewMemoryInput {
   needsReview?: boolean;
 }
 
-export async function addMemory(input: NewMemoryInput) {
-  const { error } = await supabase.from('memories').insert({
+/**
+ * Returns the new row's id.
+ *
+ * Callers used to insert and then search for the memory again by matching its
+ * question text and taking the newest — which attaches a recording to the
+ * wrong memory as soon as a question repeats, and the daily and grandchild
+ * questions both repeat by design.
+ */
+export async function addMemory(input: NewMemoryInput): Promise<string | null> {
+  const { data, error } = await supabase.from('memories').insert({
     family_id: input.familyId,
     category: input.category,
     question: input.question,
@@ -129,8 +137,11 @@ export async function addMemory(input: NewMemoryInput) {
     voice_transcript: input.voiceTranscript ?? null,
     is_anchor: input.isAnchor ?? false,
     needs_review: input.needsReview ?? false,
-  });
+  })
+    .select('id')
+    .maybeSingle();
   if (error) throw new Error(error.message);
+  return data?.id ?? null;
 }
 
 export async function updateMemory(memoryId: string, update: Partial<Memory>) {

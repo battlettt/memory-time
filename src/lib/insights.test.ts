@@ -2,11 +2,11 @@ import {
   bucketForHour,
   bestTimeOfDay,
   summariseWeek,
-  headlineFor,
   type ReviewEvent,
   type PracticeSessionRow,
 } from './insights';
 import type { Memory } from './types';
+import { en } from './translations/en';
 
 const iso = (daysAgo: number) =>
   new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000).toISOString();
@@ -143,25 +143,30 @@ describe('summariseWeek', () => {
   });
 });
 
-describe('headlineFor', () => {
-  const empty = {
-    sessionCount: 0,
-    minutesTogether: 0,
-    memoriesPractised: 0,
-    holding: [],
-    slipping: [],
-    resting: [],
-    added: [],
-    timeOfDay: null,
-  };
+describe('the report leads with time, not a score', () => {
+  // The headline moved into the translation catalogue when the interface was
+  // translated. The product decision it encoded still needs guarding: recall
+  // accuracy turns a degenerative illness into a weekly exam the family is
+  // failing, and it trends down however well anyone does.
+  const headlineKeys = [
+    'report.minutes_one',
+    'report.minutes_other',
+    'report.sessions_one',
+    'report.sessions_other',
+    'report.noSessions',
+  ] as const;
 
-  it('leads with time together, not a score', () => {
-    const line = headlineFor({ ...empty, sessionCount: 2, minutesTogether: 14 }, 'Rose');
-    expect(line).toBe('You spent 14 minutes with Rose this week.');
-    expect(line).not.toMatch(/%|accuracy|score/i);
+  it('never puts a percentage or a score in the headline', () => {
+    for (const key of headlineKeys) {
+      expect(en[key]).not.toMatch(/%|accuracy|score|correct/i);
+    }
+  });
+
+  it('measures time spent together', () => {
+    expect(en['report.minutes_other']).toMatch(/minutes with \{name\}/);
   });
 
   it('does not manufacture an achievement from a quiet week', () => {
-    expect(headlineFor(empty, 'Rose')).toMatch(/That's allowed/);
+    expect(en['report.noSessions']).toMatch(/That’s allowed/);
   });
 });

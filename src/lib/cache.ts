@@ -43,3 +43,26 @@ export async function clearCache(): Promise<void> {
     /* nothing to do */
   }
 }
+
+/** Device preferences, not family data — these survive signing out. */
+const DEVICE_KEYS = ['locale'];
+
+/**
+ * Drop everything about a family from the device, keeping device preferences.
+ *
+ * Signing out has to actually remove the data. These are memories, notes and
+ * photographs concerning someone's health, and this app is meant to be used on
+ * a tablet in a care home — a device the next person also signs into. Clearing
+ * the Supabase session alone would leave the whole reel sitting in local
+ * storage for anyone who goes looking.
+ */
+export async function clearFamilyCache(): Promise<void> {
+  try {
+    const keep = DEVICE_KEYS.map((k) => PREFIX + k);
+    const keys = await AsyncStorage.getAllKeys();
+    const doomed = keys.filter((k) => k.startsWith(PREFIX) && !keep.includes(k));
+    if (doomed.length) await AsyncStorage.multiRemove(doomed);
+  } catch {
+    /* nothing to do */
+  }
+}

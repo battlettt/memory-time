@@ -34,12 +34,6 @@ export interface PracticeSessionRow {
 
 export type TimeBucket = 'morning' | 'afternoon' | 'evening';
 
-export const BUCKET_LABEL: Record<TimeBucket, string> = {
-  morning: 'in the morning',
-  afternoon: 'in the afternoon',
-  evening: 'in the evening',
-};
-
 export function bucketForHour(hour: number): TimeBucket {
   if (hour < 12) return 'morning';
   if (hour < 17) return 'afternoon';
@@ -147,20 +141,3 @@ export function summariseWeek(
   };
 }
 
-/**
- * The headline sentence.
- *
- * Reads as time spent with a person, never as a score. When there is nothing
- * to report it says so plainly rather than manufacturing an achievement.
- */
-export function headlineFor(report: WeeklyReport, name: string): string {
-  if (report.sessionCount === 0) {
-    return `No sessions this week. That's allowed — the memories keep their place.`;
-  }
-  if (report.minutesTogether < 1) {
-    return `${report.sessionCount} ${report.sessionCount === 1 ? 'session' : 'sessions'} with ${name} this week.`;
-  }
-  return `You spent ${report.minutesTogether} ${
-    report.minutesTogether === 1 ? 'minute' : 'minutes'
-  } with ${name} this week.`;
-}

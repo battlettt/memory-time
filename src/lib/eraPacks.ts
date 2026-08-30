@@ -113,10 +113,3 @@ export const ERA_PACKS: EraPack[] = [
   },
 ];
 
-/** Suggest the pack covering the years someone was young, given a birth year. */
-export function suggestedPack(birthYear: number | null): EraPack | null {
-  if (!birthYear) return null;
-  return (
-    ERA_PACKS.find((p) => birthYear >= p.bornBetween[0] && birthYear <= p.bornBetween[1]) ?? null
-  );
-}
