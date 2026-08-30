@@ -13,6 +13,8 @@ import { useFamilyMembers } from '../../lib/useFamilyMembers';
 import { useElderRecordings } from '../../lib/elderRecordings';
 import { unretireUpdate, retireUpdate } from '../../lib/srt';
 import { formatOccurred, parseLooseDate } from '../../lib/dates';
+import { LANGUAGES } from '../../lib/languages';
+import { Chip } from '../../components/Chip';
 import { colors, iconSize, radius, spacing, typography } from '../../lib/theme';
 import type { MemoriesStackParamList } from '../../navigation/types';
 
@@ -32,6 +34,7 @@ export function MemoryDetailScreen({ route, navigation }: Props) {
   const [answer, setAnswer] = useState('');
   const [note, setNote] = useState('');
   const [dateText, setDateText] = useState('');
+  const [language, setLanguage] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -45,6 +48,7 @@ export function MemoryDetailScreen({ route, navigation }: Props) {
     setAnswer(memory.answer);
     setNote(memory.note ?? '');
     setDateText(formatOccurred(memory.occurred_on, memory.occurred_precision) ?? '');
+    setLanguage(memory.language);
     setHydrated(true);
   }, [memory, hydrated]);
 
@@ -74,6 +78,7 @@ export function MemoryDetailScreen({ route, navigation }: Props) {
         note: note.trim() || null,
         occurred_on: parsed?.occurred_on ?? null,
         occurred_precision: parsed?.occurred_precision ?? null,
+        language,
       });
       navigation.goBack();
     } catch (e: any) {
@@ -141,6 +146,23 @@ export function MemoryDetailScreen({ route, navigation }: Props) {
         hint="However precisely you remember it — a year on its own is fine."
       />
       <TextField label="A note from you" value={note} onChangeText={setNote} />
+
+      <View style={styles.languageBlock}>
+        <Text style={typography.subheading}>Language</Text>
+        <Text style={typography.caption}>
+          Tap again to clear it. People often return to a first language later on.
+        </Text>
+        <View style={styles.chipRow}>
+          {LANGUAGES.map((l) => (
+            <Chip
+              key={l.code}
+              label={l.label}
+              selected={language === l.code}
+              onPress={() => setLanguage(language === l.code ? null : l.code)}
+            />
+          ))}
+        </View>
+      </View>
 
       {memory.voice_url && (
         <VoicePlayer uri={memory.voice_url} attribution={nameFor(memory.added_by)} />
@@ -226,6 +248,8 @@ const styles = StyleSheet.create({
   statusCard: { flexDirection: 'row', gap: spacing.md, padding: spacing.md, alignItems: 'flex-start' },
   restingCard: { backgroundColor: colors.accentSoft, borderColor: colors.accentSoft },
   statusText: { flex: 1, gap: 2 },
+  languageBlock: { gap: spacing.xs },
+  chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginTop: spacing.xs },
   recordingsCard: { padding: spacing.md, gap: spacing.sm },
   toggleCard: { padding: spacing.md },
   toggleRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },

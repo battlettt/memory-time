@@ -8,7 +8,8 @@ import { VoicePlayer } from '../../components/VoicePlayer';
 import { useFamily } from '../../state/FamilyContext';
 import { useMemories } from '../../lib/useMemories';
 import { useFamilyMembers } from '../../lib/useFamilyMembers';
-import { anniversariesToday, formatOccurred, yearsAgoLabel } from '../../lib/dates';
+import { anniversariesToday, formatOccurred, yearsAgo } from '../../lib/dates';
+import { useI18n } from '../../lib/i18n';
 import { colors, iconSize, radius, shadows, spacing, typography } from '../../lib/theme';
 import type { Memory } from '../../lib/types';
 
@@ -19,6 +20,7 @@ export function OnThisDayScreen() {
   const { current } = useFamily();
   const { memories } = useMemories(current?.family.id ?? null);
   const { nameFor } = useFamilyMembers(current?.family.id ?? null);
+  const { t, tCount } = useI18n();
 
   const withPhotos = memories.filter((m) => m.photo_url);
   const name = current?.family.care_recipient_name ?? 'them';
@@ -36,28 +38,28 @@ export function OnThisDayScreen() {
   }, [withPhotos, anniversaries]);
 
   const renderItem = ({ item }: { item: Memory }) => {
-    const anniversary = yearsAgoLabel(item.occurred_on, item.occurred_precision);
+    const years = yearsAgo(item.occurred_on, item.occurred_precision);
     const occurred = formatOccurred(item.occurred_on, item.occurred_precision);
 
     return (
     <View style={styles.card}>
       <Image source={{ uri: item.photo_url! }} style={styles.photo} resizeMode="cover" />
       <View style={styles.caption}>
-        {anniversary && (
+        {years !== null && (
           <View style={styles.anniversary}>
             <Ionicons name="sparkles" size={iconSize.sm} color={colors.accentStrong} />
-            <Text style={styles.anniversaryText}>{anniversary}</Text>
+            <Text style={styles.anniversaryText}>{tCount('album.yearsAgo', years)}</Text>
           </View>
         )}
         <Text style={typography.serifLarge}>{item.answer}</Text>
-        {occurred && !anniversary && <Text style={typography.subtext}>{occurred}</Text>}
+        {occurred && years === null && <Text style={typography.subtext}>{occurred}</Text>}
         {item.note && <Text style={[typography.body, styles.note]}>“{item.note}”</Text>}
         {item.voice_url && (
           <VoicePlayer uri={item.voice_url} attribution={nameFor(item.added_by)} />
         )}
         <View style={styles.attribution}>
           <Ionicons name="heart" size={iconSize.sm} color={colors.accent} />
-          <Text style={typography.subtext}>Shared by {nameFor(item.added_by)}</Text>
+          <Text style={typography.subtext}>{t('common.sharedBy', { name: nameFor(item.added_by) })}</Text>
         </View>
       </View>
     </View>
@@ -66,13 +68,13 @@ export function OnThisDayScreen() {
 
   const subtitle =
     anniversaries.length > 0
-      ? `${anniversaries.length} ${anniversaries.length === 1 ? 'anniversary' : 'anniversaries'} today.`
-      : 'Just for looking through — no questions here.';
+      ? tCount('album.anniversaries', anniversaries.length)
+      : t('album.subtitle');
 
   return (
     <Screen scroll={false}>
       <View style={styles.header}>
-        <ScreenHeader title="Album" subtitle={subtitle} />
+        <ScreenHeader title={t('album.title')} subtitle={subtitle} />
       </View>
       <FlatList
         data={ordered}
@@ -83,8 +85,8 @@ export function OnThisDayScreen() {
         ListEmptyComponent={
           <EmptyState
             icon="image-outline"
-            title="No photos yet"
-            body={`Photos added to memories show up here, full width, for quiet browsing with ${name}.`}
+            title={t('album.empty.title')}
+            body={t('album.empty.body', { name })}
           />
         }
       />

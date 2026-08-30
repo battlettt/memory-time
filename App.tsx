@@ -13,6 +13,7 @@ import { AuthProvider } from './src/state/AuthContext';
 import { FamilyProvider } from './src/state/FamilyContext';
 import { ElderModeProvider } from './src/state/ElderModeContext';
 import { FamilySettingsProvider } from './src/lib/useFamilySettings';
+import { I18nProvider } from './src/lib/i18n';
 import { RootNavigator } from './src/navigation/RootNavigator';
 import { ErrorBoundary } from './src/components/ErrorBoundary';
 import { colors } from './src/lib/theme';
@@ -37,16 +38,20 @@ export default function App() {
     <SafeAreaProvider>
       <View style={{ flex: 1, backgroundColor: colors.background }} onLayout={onLayout}>
         <ErrorBoundary>
-          <AuthProvider>
-            <FamilyProvider>
-              <FamilySettingsProvider>
-                <ElderModeProvider>
-                <RootNavigator />
-                <StatusBar style="dark" />
-                </ElderModeProvider>
-              </FamilySettingsProvider>
-            </FamilyProvider>
-          </AuthProvider>
+          {/* Outermost of the app providers: the sign-in and error screens
+              need translating too, and none of this depends on a session. */}
+          <I18nProvider>
+            <AuthProvider>
+              <FamilyProvider>
+                <FamilySettingsProvider>
+                  <ElderModeProvider>
+                    <RootNavigator />
+                    <StatusBar style="dark" />
+                  </ElderModeProvider>
+                </FamilySettingsProvider>
+              </FamilyProvider>
+            </AuthProvider>
+          </I18nProvider>
         </ErrorBoundary>
       </View>
     </SafeAreaProvider>

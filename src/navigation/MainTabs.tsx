@@ -7,6 +7,7 @@ import { MemoriesNavigator } from './MemoriesNavigator';
 import { OnThisDayScreen } from '../screens/onthisday/OnThisDayScreen';
 import { LifeStoryNavigator } from './LifeStoryNavigator';
 import { SettingsNavigator } from './SettingsNavigator';
+import { useT } from '../lib/i18n';
 import { colors, fonts } from '../lib/theme';
 import type { MainTabParamList } from './types';
 
@@ -27,6 +28,7 @@ const ICONS: Record<keyof MainTabParamList, { active: IoniconName; inactive: Ion
 // from both presenting themselves as "Memories".
 export function MainTabs() {
   const insets = useSafeAreaInsets();
+  const t = useT();
 
   // The bar is sized explicitly from the safe-area inset. A bare fixed height
   // clipped the labels on devices with a home indicator; omitting height
@@ -56,11 +58,31 @@ export function MainTabs() {
         ),
       })}
     >
-      <Tab.Screen name="PracticeTab" component={PracticeNavigator} options={{ title: 'Today' }} />
-      <Tab.Screen name="MemoriesTab" component={MemoriesNavigator} options={{ title: 'Memories' }} />
-      <Tab.Screen name="OnThisDayTab" component={OnThisDayScreen} options={{ title: 'Album' }} />
-      <Tab.Screen name="LifeStoryTab" component={LifeStoryNavigator} options={{ title: 'Story' }} />
-      <Tab.Screen name="SettingsTab" component={SettingsNavigator} options={{ title: 'Settings' }} />
+      <Tab.Screen
+        name="PracticeTab"
+        component={PracticeNavigator}
+        options={{ title: t('tab.today') }}
+      />
+      <Tab.Screen
+        name="MemoriesTab"
+        component={MemoriesNavigator}
+        options={{ title: t('tab.memories') }}
+      />
+      <Tab.Screen
+        name="OnThisDayTab"
+        component={OnThisDayScreen}
+        options={{ title: t('tab.album') }}
+      />
+      <Tab.Screen
+        name="LifeStoryTab"
+        component={LifeStoryNavigator}
+        options={{ title: t('tab.story') }}
+      />
+      <Tab.Screen
+        name="SettingsTab"
+        component={SettingsNavigator}
+        options={{ title: t('tab.settings') }}
+      />
     </Tab.Navigator>
   );
 }

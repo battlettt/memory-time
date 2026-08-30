@@ -9,7 +9,8 @@ import { useElderMode } from '../../state/ElderModeContext';
 import { useMemories } from '../../lib/useMemories';
 import { useFamilyMembers } from '../../lib/useFamilyMembers';
 import { useScaledTypography } from '../../lib/useScaledTypography';
-import { yearsAgoLabel } from '../../lib/dates';
+import { yearsAgo } from '../../lib/dates';
+import { useI18n } from '../../lib/i18n';
 import { colors, iconSize, maxContentWidth, radius, shadows, spacing } from '../../lib/theme';
 
 const EXIT_HOLD_MS = 1500;
@@ -32,6 +33,7 @@ export function ElderModeScreen() {
   const { nameFor } = useFamilyMembers(current?.family.id ?? null);
   // A generous bump on top of whatever the family already chose.
   const type = useScaledTypography(1.15);
+  const { t, tCount } = useI18n();
 
   const [index, setIndex] = useState(0);
 
@@ -49,18 +51,18 @@ export function ElderModeScreen() {
         <View style={styles.emptyWrap}>
           <EmptyState
             icon="images-outline"
-            title="No photographs yet"
-            body="Once the family has added some photos, they'll appear here to look through."
+            title={t('elder.empty.title')}
+            body={t('elder.empty.body')}
           />
           <Pressable onPress={exit} style={styles.exitPlain} accessibilityRole="button">
-            <Text style={type.body}>Back to the app</Text>
+            <Text style={type.body}>{t('elder.back')}</Text>
           </Pressable>
         </View>
       </SafeAreaView>
     );
   }
 
-  const anniversary = yearsAgoLabel(memory.occurred_on, memory.occurred_precision);
+  const years = yearsAgo(memory.occurred_on, memory.occurred_precision);
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -68,7 +70,11 @@ export function ElderModeScreen() {
         <View style={styles.card}>
           <Image source={{ uri: memory.photo_url! }} style={styles.photo} resizeMode="cover" />
           <View style={styles.caption}>
-            {anniversary && <Text style={[type.subtext, styles.anniversary]}>{anniversary}</Text>}
+            {years !== null && (
+              <Text style={[type.subtext, styles.anniversary]}>
+                {tCount('album.yearsAgo', years)}
+              </Text>
+            )}
             <Text style={type.serifLarge}>{memory.answer}</Text>
             {memory.note && <Text style={[type.body, styles.note]}>“{memory.note}”</Text>}
             {memory.voice_url && (
@@ -80,7 +86,7 @@ export function ElderModeScreen() {
         <View style={styles.controls}>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Previous photograph"
+            accessibilityLabel={t('elder.previous')}
             onPress={() => go(-1)}
             style={({ pressed }) => [styles.navButton, pressed && styles.pressed]}
           >
@@ -89,24 +95,24 @@ export function ElderModeScreen() {
 
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Next photograph"
+            accessibilityLabel={t('elder.nextLabel')}
             onPress={() => go(1)}
             style={({ pressed }) => [styles.navButton, styles.navPrimary, pressed && styles.pressed]}
           >
-            <Text style={[type.button, styles.nextLabel]}>Next</Text>
+            <Text style={[type.button, styles.nextLabel]}>{t('elder.next')}</Text>
             <Ionicons name="chevron-forward" size={44} color={colors.onPrimary} />
           </Pressable>
         </View>
 
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Hold to leave this mode"
+          accessibilityLabel={t('elder.holdLabel')}
           onLongPress={exit}
           delayLongPress={EXIT_HOLD_MS}
           style={styles.exit}
         >
           <Ionicons name="lock-closed-outline" size={iconSize.sm} color={colors.subtext} />
-          <Text style={styles.exitText}>Hold to leave</Text>
+          <Text style={styles.exitText}>{t('elder.hold')}</Text>
         </Pressable>
       </View>
     </SafeAreaView>

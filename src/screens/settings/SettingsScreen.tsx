@@ -16,6 +16,7 @@ import { useMemories } from '../../lib/useMemories';
 import { useLifeStory } from '../../lib/useLifeStory';
 import { exportBook } from '../../lib/bookExport';
 import { notificationsAvailable, syncDailyReminder } from '../../lib/notifications';
+import { LOCALES, useI18n } from '../../lib/i18n';
 import { createInviteCode } from '../../lib/invites';
 import {
   contributionUrl,
@@ -30,6 +31,7 @@ import type { SettingsStackParamList } from '../../navigation/types';
 type Props = NativeStackScreenProps<SettingsStackParamList, 'SettingsHome'>;
 
 export function SettingsScreen({ navigation }: Props) {
+  const { t, override, setLocale } = useI18n();
   const { signOut } = useAuth();
   const { current, memberships, setCurrentFamilyId } = useFamily();
   const { members } = useFamilyMembers(current?.family.id ?? null);
@@ -264,6 +266,29 @@ export function SettingsScreen({ navigation }: Props) {
             onValueChange={(v) => update({ daily_prompt_enabled: v }).catch(() => {})}
             trackColor={{ true: colors.primary, false: colors.borderStrong }}
           />
+        </View>
+
+        {/* The app's own language, distinct from the language a memory is
+            recorded in — a caregiver may read Spanish while the memories are
+            in Punjabi, and both need to work. */}
+        <View style={styles.prefText}>
+          <Text style={typography.bodyStrong}>{t('settings.appLanguage')}</Text>
+          <Text style={typography.caption}>{t('settings.appLanguageBody')}</Text>
+          <View style={styles.chipRow}>
+            <Chip
+              label={t('settings.followDevice')}
+              selected={override === null}
+              onPress={() => setLocale(null)}
+            />
+            {LOCALES.map((l) => (
+              <Chip
+                key={l.code}
+                label={l.label}
+                selected={override === l.code}
+                onPress={() => setLocale(l.code)}
+              />
+            ))}
+          </View>
         </View>
 
         <View style={styles.prefText}>

@@ -114,7 +114,7 @@ export function AddMemoryScreen({ route, navigation }: Props) {
           return to their first one.
         </Text>
         <View style={styles.categoryRow}>
-          {LANGUAGES.slice(0, 8).map((l) => (
+          {LANGUAGES.map((l) => (
             <Chip
               key={l.code}
               label={l.label}

@@ -14,6 +14,7 @@ import { useFamilySettings } from '../../lib/useFamilySettings';
 import { dueMemories, sessionSelection } from '../../lib/srt';
 import { getOrCreateTodaysPrompt, type DailyPrompt } from '../../lib/dailyPrompt';
 import { tipForToday } from '../../lib/coaching';
+import { useI18n } from '../../lib/i18n';
 import { colors, iconSize, radius, spacing, typography } from '../../lib/theme';
 import type { PracticeStackParamList, MainTabParamList } from '../../navigation/types';
 
@@ -25,6 +26,7 @@ export function PracticeHomeScreen({ navigation }: Props) {
   const { settings } = useFamilySettings();
   const { enter: enterElderMode } = useElderMode();
   const tip = useMemo(() => tipForToday(), []);
+  const { t, tCount } = useI18n();
   const due = useMemo(() => dueMemories(memories), [memories]);
 
   // A capped session is one somebody will actually finish. Thirty due
@@ -63,23 +65,22 @@ export function PracticeHomeScreen({ navigation }: Props) {
     return (
       <Screen>
         <View style={styles.heading}>
-          <Text style={typography.label}>REMEMBERING</Text>
+          <Text style={typography.label}>{t('memorial.eyebrow')}</Text>
           <Text style={typography.display}>{name}</Text>
         </View>
         <Card elevation="raised" style={styles.restCard}>
-          <Text style={typography.serifLarge}>Everything is still here</Text>
+          <Text style={typography.serifLarge}>{t('memorial.title')}</Text>
           <Text style={[typography.body, styles.restBody]}>
-            The photographs, the story, and every voice recording. Nothing will ask you to practise
-            or remind you to open the app.
+{t('memorial.body')}
           </Text>
         </Card>
         <PrimaryButton
-          label="Look through the album"
+          label={t('today.album')}
           icon="images-outline"
           onPress={() => goToTab('OnThisDayTab')}
         />
         <PrimaryButton
-          label={`Read ${name}'s story`}
+          label={t('memorial.readStory', { name })}
           icon="book-outline"
           variant="secondary"
           onPress={() => goToTab('LifeStoryTab')}
@@ -91,16 +92,16 @@ export function PracticeHomeScreen({ navigation }: Props) {
   return (
     <Screen>
       <View style={styles.heading}>
-        <Text style={typography.label}>TODAY</Text>
-        <Text style={typography.display}>Time with {name}</Text>
+        <Text style={typography.label}>{t('today.eyebrow')}</Text>
+        <Text style={typography.display}>{t('today.title', { name })}</Text>
       </View>
 
       {!loading && memories.length === 0 && (
         <EmptyState
           icon="images-outline"
-          title="The reel is empty"
-          body={`Add a few photos and questions about ${name}, and practice sessions will build themselves from there.`}
-          actionLabel="Add the first memory"
+          title={t('today.empty.title')}
+          body={t('today.empty.body', { name })}
+          actionLabel={t('today.empty.action')}
           onAction={() => goToTab('MemoriesTab')}
         />
       )}
@@ -112,19 +113,19 @@ export function PracticeHomeScreen({ navigation }: Props) {
             <View style={styles.countRow}>
               <Text style={styles.count}>{selected.length}</Text>
               <Text style={[typography.heading, styles.countLabel]}>
-                {selected.length === 1 ? 'memory ready' : 'memories ready'}
+{tCount('today.ready', selected.length)}
               </Text>
             </View>
             <Text style={typography.subtext}>
               {due.length > selected.length
-                ? `${due.length - selected.length} more are waiting — they’ll come round next time.`
+? t('today.moreWaiting', { count: due.length - selected.length })
                 : memories.length - due.length > 0
-                  ? `${memories.length - due.length} more will come back around as they're due.`
-                  : 'Take them at whatever pace feels right.'}
+                  ? t('today.moreDue', { count: memories.length - due.length })
+                  : t('today.anyPace')}
             </Text>
             <View style={styles.heroAction}>
               <PrimaryButton
-                label="Start a session"
+                label={t('today.start')}
                 icon="play"
                 onPress={() =>
                   navigation.navigate('Session', { memoryIds: selected.map((m) => m.id) })
@@ -140,10 +141,9 @@ export function PracticeHomeScreen({ navigation }: Props) {
           <View style={styles.restIcon}>
             <Ionicons name="checkmark" size={iconSize.lg} color={colors.onSuccess} />
           </View>
-          <Text style={typography.serifLarge}>All caught up</Text>
+          <Text style={typography.serifLarge}>{t('today.caughtUp.title')}</Text>
           <Text style={[typography.body, styles.restBody]}>
-            Everything in the reel has been practised recently. Memories return on their own
-            schedule — there's nothing you need to do today.
+{t('today.caughtUp.body')}
           </Text>
         </Card>
       )}
@@ -163,11 +163,11 @@ export function PracticeHomeScreen({ navigation }: Props) {
         <Card style={styles.promptCard}>
           <View style={styles.promptHead}>
             <Ionicons name="chatbubble-ellipses-outline" size={iconSize.md} color={colors.accentStrong} />
-            <Text style={typography.label}>ONE QUESTION FOR YOU</Text>
+            <Text style={typography.label}>{t('today.prompt.eyebrow')}</Text>
           </View>
           <Text style={typography.serifLarge}>{dailyPrompt.question}</Text>
           <PrimaryButton
-            label="Answer out loud"
+            label={t('today.prompt.answer')}
             icon="mic"
             variant="secondary"
             onPress={() => navigation.navigate('DailyPrompt')}
@@ -177,7 +177,7 @@ export function PracticeHomeScreen({ navigation }: Props) {
 
       {!loading && memories.length > 0 && (
         <PrimaryButton
-          label="Look through the album"
+          label={t('today.album')}
           icon="images-outline"
           variant="secondary"
           onPress={() => goToTab('OnThisDayTab')}
@@ -188,7 +188,7 @@ export function PracticeHomeScreen({ navigation }: Props) {
           one screen that works without one. */}
       {!loading && memories.some((m) => m.photo_url) && (
         <PrimaryButton
-          label={`Hand the screen to ${name}`}
+          label={t('today.handOver', { name })}
           icon="hand-left-outline"
           variant="ghost"
           onPress={enterElderMode}
@@ -196,7 +196,7 @@ export function PracticeHomeScreen({ navigation }: Props) {
       )}
 
       <PrimaryButton
-        label="A job for a grandchild"
+        label={t('today.grandchild')}
         icon="happy-outline"
         variant="ghost"
         onPress={() => navigation.navigate('Grandchild')}

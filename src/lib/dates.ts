@@ -43,7 +43,26 @@ export function formatOccurred(
   }
 }
 
-/** "42 years ago today" — only honest when the day itself is known. */
+/**
+ * How many years ago today, or null when the day itself isn't known.
+ *
+ * Returns the number rather than a sentence so the caller can render it in
+ * whatever language the app is set to — "42 years ago today" is not something
+ * you can translate by swapping words around it.
+ */
+export function yearsAgo(
+  occurredOn: string | null,
+  precision: DatePrecision | null,
+  now: Date = new Date()
+): number | null {
+  if (!occurredOn || precision !== 'day') return null;
+  const date = new Date(`${occurredOn}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return null;
+  const years = now.getFullYear() - date.getFullYear();
+  return years > 0 ? years : null;
+}
+
+/** English sentence form. Used by the printed book, which is a fixed document. */
 export function yearsAgoLabel(
   occurredOn: string | null,
   precision: DatePrecision | null,
