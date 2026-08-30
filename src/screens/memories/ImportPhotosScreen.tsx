@@ -11,6 +11,7 @@ import { useFamily } from '../../state/FamilyContext';
 import { addMemory } from '../../lib/useMemories';
 import { uploadPhoto } from '../../lib/media';
 import { formatOccurred } from '../../lib/dates';
+import { useI18n } from '../../lib/i18n';
 import {
   MAX_IMPORT_BATCH,
   capturePhotoForImport,
@@ -28,6 +29,7 @@ type Stage = 'pick' | 'drafting' | 'review' | 'saving';
 
 export function ImportPhotosScreen({ navigation }: Props) {
   const { current } = useFamily();
+  const { t, tCount } = useI18n();
   const [stage, setStage] = useState<Stage>('pick');
   const [photos, setPhotos] = useState<PickedPhoto[]>([]);
   const [drafts, setDrafts] = useState<MemoryDraft[]>([]);
@@ -47,14 +49,14 @@ export function ImportPhotosScreen({ navigation }: Props) {
     try {
       const result = await draftMemoriesFromPhotos(current.family.id, picked);
       if (result.length === 0) {
-        setError('Nothing came back for those photos. You can still add them by hand.');
+        setError(t('import.nothingBack'));
         setStage('pick');
         return;
       }
       setDrafts(result);
       setStage('review');
     } catch (e: any) {
-      setError(e.message ?? 'Could not read those photos');
+      setError(e.message ?? t('import.readFailed'));
       setStage('pick');
     }
   };
@@ -99,7 +101,7 @@ export function ImportPhotosScreen({ navigation }: Props) {
       }
       navigation.navigate('MemoriesHome');
     } catch (e: any) {
-      setError(e.message ?? 'Could not save these memories');
+      setError(e.message ?? t('import.saveFailed'));
       setStage('review');
     }
   };
@@ -110,12 +112,12 @@ export function ImportPhotosScreen({ navigation }: Props) {
         <View style={styles.busy}>
           <ActivityIndicator size="large" color={colors.primary} />
           <Text style={typography.serifLarge}>
-            {stage === 'drafting' ? 'Reading the photographs…' : 'Saving…'}
+{stage === 'drafting' ? t('import.reading') : t('import.saving')}
           </Text>
           <Text style={[typography.subtext, styles.centered]}>
             {stage === 'drafting'
-              ? `Drafting a question for each one. You'll get to correct them before anything is saved.`
-              : `${progress} of ${kept.length} saved.`}
+? t('import.readingBody')
+              : t('import.savingProgress', { done: progress, total: kept.length })}
           </Text>
         </View>
       </Screen>
@@ -127,8 +129,8 @@ export function ImportPhotosScreen({ navigation }: Props) {
       <Screen>
         <EmptyState
           icon="images-outline"
-          title="Add photos in a batch"
-          body={`Pick up to ${MAX_IMPORT_BATCH} photos and each one gets a draft question and answer. You correct them, then they go in — much faster than typing every memory about ${name} from scratch.`}
+          title={t('import.empty.title')}
+          body={t('import.empty.body', { max: MAX_IMPORT_BATCH, name })}
         />
         {error && (
           <View style={styles.error}>
@@ -137,12 +139,12 @@ export function ImportPhotosScreen({ navigation }: Props) {
           </View>
         )}
         <PrimaryButton
-          label="Choose photos"
+          label={t('import.choose')}
           icon="images"
           onPress={async () => run(await pickPhotosForImport())}
         />
         <PrimaryButton
-          label="Photograph a print"
+          label={t('import.camera')}
           icon="camera"
           variant="secondary"
           onPress={async () => {
@@ -151,8 +153,7 @@ export function ImportPhotosScreen({ navigation }: Props) {
           }}
         />
         <Text style={[typography.caption, styles.centered]}>
-          Most families have a shoebox, not a photo library. Photographing a print works just as
-          well.
+{t('import.shoebox')}
         </Text>
       </Screen>
     );
@@ -160,10 +161,9 @@ export function ImportPhotosScreen({ navigation }: Props) {
 
   return (
     <Screen>
-      <Text style={typography.title}>Check these over</Text>
+      <Text style={typography.title}>{t('import.review.title')}</Text>
       <Text style={typography.subtext}>
-        These are drafts. Nothing is saved until you tap the button at the bottom, and anything
-        with a blank in square brackets needs a real name putting in.
+{t('import.review.body')}
       </Text>
 
       {drafts.map((draft) => {
@@ -182,12 +182,12 @@ export function ImportPhotosScreen({ navigation }: Props) {
                     <Text style={styles.dateChipText}>{occurred}</Text>
                   </View>
                 ) : (
-                  <Text style={typography.caption}>No date in the file</Text>
+                  <Text style={typography.caption}>{t('import.noDate')}</Text>
                 )}
                 {!draft.confident && (
                   <View style={styles.needsChip}>
                     <Ionicons name="create-outline" size={12} color={colors.accentStrong} />
-                    <Text style={styles.dateChipText}>Needs a name</Text>
+                    <Text style={styles.dateChipText}>{t('import.needsName')}</Text>
                   </View>
                 )}
                 <Pressable
@@ -200,7 +200,7 @@ export function ImportPhotosScreen({ navigation }: Props) {
                     size={iconSize.sm}
                     color={colors.subtext}
                   />
-                  <Text style={typography.caption}>{isDiscarded ? 'Keep' : 'Skip this one'}</Text>
+                  <Text style={typography.caption}>{isDiscarded ? t('import.keep') : t('import.skip')}</Text>
                 </Pressable>
               </View>
             </View>
@@ -208,12 +208,12 @@ export function ImportPhotosScreen({ navigation }: Props) {
             {!isDiscarded && (
               <>
                 <TextField
-                  label="Question"
+                  label={t('addMemory.question')}
                   value={draft.question}
                   onChangeText={(question) => edit(draft.index, { question })}
                 />
                 <TextField
-                  label="Answer"
+                  label={t('addMemory.answer')}
                   value={draft.answer}
                   onChangeText={(answer) => edit(draft.index, { answer })}
                 />
@@ -233,8 +233,8 @@ export function ImportPhotosScreen({ navigation }: Props) {
       <PrimaryButton
         label={
           kept.length === 0
-            ? 'Nothing selected'
-            : `Save ${kept.length} ${kept.length === 1 ? 'memory' : 'memories'}`
+? t('import.nothingSelected')
+            : tCount('import.save', kept.length)
         }
         icon="checkmark"
         disabled={kept.length === 0}

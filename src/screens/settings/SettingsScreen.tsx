@@ -31,7 +31,7 @@ import type { SettingsStackParamList } from '../../navigation/types';
 type Props = NativeStackScreenProps<SettingsStackParamList, 'SettingsHome'>;
 
 export function SettingsScreen({ navigation }: Props) {
-  const { t, override, setLocale } = useI18n();
+  const { t, tCount, override, setLocale } = useI18n();
   const { signOut } = useAuth();
   const { current, memberships, setCurrentFamilyId } = useFamily();
   const { members } = useFamilyMembers(current?.family.id ?? null);
@@ -143,7 +143,7 @@ export function SettingsScreen({ navigation }: Props) {
 
   return (
     <Screen>
-      <ScreenHeader title="Settings" />
+      <ScreenHeader title={t('settings.title')} />
 
       {current && (
         <Card style={[styles.card, styles.profileCard]}>
@@ -153,8 +153,7 @@ export function SettingsScreen({ navigation }: Props) {
           <View style={styles.profileText}>
             <Text style={typography.heading}>{current.family.name}</Text>
             <Text style={typography.subtext}>
-              You're {current.member.display_name} · {members.length}{' '}
-              {members.length === 1 ? 'person' : 'people'} in this group
+{t('settings.you', { name: current.member.display_name, count: tCount('settings.people', members.length) })}
             </Text>
           </View>
         </Card>
@@ -162,7 +161,7 @@ export function SettingsScreen({ navigation }: Props) {
 
       {memberships.length > 1 && (
         <Card style={styles.card}>
-          <Text style={typography.label}>SWITCH GROUP</Text>
+          <Text style={typography.label}>{t('settings.switchGroup')}</Text>
           {memberships.map((m) => (
             <PrimaryButton
               key={m.family.id}
@@ -175,13 +174,12 @@ export function SettingsScreen({ navigation }: Props) {
       )}
 
       <Card style={styles.card}>
-        <Text style={typography.label}>INVITE FAMILY</Text>
+        <Text style={typography.label}>{t('settings.invite')}</Text>
         <Text style={typography.subtext}>
-          The more people adding memories, the richer the reel. Anyone with a code can add photos
-          and stories from their own phone.
+{t('settings.inviteBody')}
         </Text>
         <PrimaryButton
-          label="Create invite code"
+          label={t('settings.inviteCreate')}
           icon="person-add-outline"
           onPress={handleInvite}
           loading={generating}
@@ -193,7 +191,7 @@ export function SettingsScreen({ navigation }: Props) {
                 {inviteCode}
               </Text>
             </View>
-            <Text style={typography.caption}>Share this code. It expires in 14 days.</Text>
+            <Text style={typography.caption}>{t('settings.inviteExpiry')}</Text>
           </>
         )}
         {error && (
@@ -205,44 +203,42 @@ export function SettingsScreen({ navigation }: Props) {
       </Card>
 
       <Card style={styles.card}>
-        <Text style={typography.label}>FOR YOU</Text>
+        <Text style={typography.label}>{t('settings.forYou')}</Text>
         <Text style={typography.subtext}>
-          You're doing the work here. These two are yours.
+{t('settings.forYouBody')}
         </Text>
         <PrimaryButton
-          label="This week"
+          label={t('settings.report')}
           icon="stats-chart-outline"
           variant="secondary"
           onPress={() => navigation.navigate('WeeklyReport')}
         />
         <PrimaryButton
-          label="One page for a new carer"
+          label={t('settings.handoff')}
           icon="document-text-outline"
           variant="secondary"
           onPress={() => navigation.navigate('HandoffSheet')}
         />
         <PrimaryButton
-          label={exporting ? 'Building the book…' : 'Make a book'}
+          label={exporting ? t('settings.bookBuilding') : t('settings.book')}
           icon="book-outline"
           variant="secondary"
           loading={exporting}
           onPress={handleExport}
         />
         <Text style={typography.caption}>
-          The story and the photographs as one document you can print and keep. It doesn't need
-          this app, an account, or us.
+{t('settings.bookBody')}
         </Text>
       </Card>
 
       <Card style={styles.card}>
-        <Text style={typography.label}>PREFERENCES</Text>
+        <Text style={typography.label}>{t('settings.preferences')}</Text>
 
         <View style={styles.prefRow}>
           <View style={styles.prefText}>
-            <Text style={typography.bodyStrong}>Larger text</Text>
+            <Text style={typography.bodyStrong}>{t('settings.largeText')}</Text>
             <Text style={typography.caption}>
-              Applies to sessions, the album and the hand-over screen — the ones{' '}
-              {current?.family.care_recipient_name ?? 'they'} actually reads.
+{t('settings.largeTextBody', { name: current?.family.care_recipient_name ?? 'they' })}
             </Text>
           </View>
           <Switch
@@ -254,11 +250,11 @@ export function SettingsScreen({ navigation }: Props) {
 
         <View style={styles.prefRow}>
           <View style={styles.prefText}>
-            <Text style={typography.bodyStrong}>A question each day</Text>
+            <Text style={typography.bodyStrong}>{t('settings.dailyQuestion')}</Text>
             <Text style={typography.caption}>
-              {notificationsAvailable()
-                ? `One question, at ${settings?.daily_prompt_hour ?? 18}:00, for you to answer out loud.`
-                : 'One question a day on the Today screen. Reminders need the phone app.'}
+{notificationsAvailable()
+                ? t('settings.dailyQuestionBody', { hour: settings?.daily_prompt_hour ?? 18 })
+                : t('settings.dailyQuestionWeb')}
             </Text>
           </View>
           <Switch
@@ -292,9 +288,9 @@ export function SettingsScreen({ navigation }: Props) {
         </View>
 
         <View style={styles.prefText}>
-          <Text style={typography.bodyStrong}>Session length</Text>
+          <Text style={typography.bodyStrong}>{t('settings.sessionLength')}</Text>
           <Text style={typography.caption}>
-            Short sessions get finished; long ones get skipped.
+{t('settings.sessionLengthBody')}
           </Text>
           <View style={styles.chipRow}>
             {[5, 8, 12, 20].map((n) => (
@@ -310,13 +306,12 @@ export function SettingsScreen({ navigation }: Props) {
       </Card>
 
       <Card style={styles.card}>
-        <Text style={typography.label}>SHARE A LINK</Text>
+        <Text style={typography.label}>{t('settings.shareLink')}</Text>
         <Text style={typography.subtext}>
-          For relatives who won't install an app. They open the link, write a memory, and send it —
-          no account needed. Everything that arrives is held for you to look at first.
+{t('settings.shareLinkBody')}
         </Text>
         <PrimaryButton
-          label="Create a link"
+          label={t('settings.createLink')}
           icon="link-outline"
           variant="secondary"
           onPress={handleCreateLink}
@@ -327,21 +322,23 @@ export function SettingsScreen({ navigation }: Props) {
           <View key={link.id} style={styles.link}>
             <View style={styles.linkText}>
               <Text style={typography.bodyStrong} numberOfLines={1}>
-                {copied === link.token ? 'Copied to your clipboard' : contributionUrl(link.token)}
+    {copied === link.token ? t('settings.copied') : contributionUrl(link.token)}
               </Text>
               <Text style={typography.caption}>
-                {link.submission_count} sent · expires{' '}
-                {link.expires_at ? new Date(link.expires_at).toLocaleDateString() : 'never'}
+{t('settings.linkSent', {
+                  count: link.submission_count,
+                  date: link.expires_at ? new Date(link.expires_at).toLocaleDateString() : '—',
+                })}
               </Text>
             </View>
             <View style={styles.linkActions}>
               <PrimaryButton
-                label={Platform.OS === 'web' ? 'Copy' : 'Share'}
+label={Platform.OS === 'web' ? t('settings.copy') : t('settings.share')}
                 variant="secondary"
                 onPress={() => handleShare(link.token)}
               />
               <PrimaryButton
-                label="Turn off"
+                label={t('settings.turnOff')}
                 variant="ghost"
                 onPress={() => revokeContributionLink(link.id).then(refreshLinks).catch(() => {})}
               />
@@ -354,26 +351,24 @@ export function SettingsScreen({ navigation }: Props) {
           simply carry on prompting. */}
       <Card style={styles.card}>
         <Text style={typography.label}>
-          {settings?.memorial_mode ? 'A PLACE TO REMEMBER' : 'IF THEY HAVE DIED'}
+{settings?.memorial_mode ? t('settings.memorialOn') : t('settings.memorialOff')}
         </Text>
         {settings?.memorial_mode ? (
           <Text style={typography.subtext}>
-            Reminders are off and nothing will ask you to practise. The album, the story and the
-            recordings all stay exactly as they are.
+{t('settings.memorialOnBody')}
           </Text>
         ) : (
           <Text style={typography.subtext}>
-            Turning this on stops every reminder and every prompt to practise, and keeps the album,
-            the story and the recordings. You can turn it off again.
+{t('settings.memorialOffBody')}
           </Text>
         )}
         <PrimaryButton
           label={
             settings?.memorial_mode
-              ? 'Start practising again'
+? t('settings.memorialDisable')
               : confirmMemorial
-                ? 'Tap again to turn on'
-                : 'Turn on remembering mode'
+                ? t('settings.memorialConfirm')
+                : t('settings.memorialEnable')
           }
           variant="ghost"
           onPress={() => {
@@ -393,7 +388,7 @@ export function SettingsScreen({ navigation }: Props) {
         />
       </Card>
 
-      <PrimaryButton label="Sign out" variant="ghost" onPress={signOut} />
+      <PrimaryButton label={t('settings.signOut')} variant="ghost" onPress={signOut} />
     </Screen>
   );
 }

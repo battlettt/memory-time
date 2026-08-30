@@ -11,6 +11,7 @@ import { useFamily } from '../../state/FamilyContext';
 import { useMemories } from '../../lib/useMemories';
 import { useLifeStory } from '../../lib/useLifeStory';
 import { languageLabel } from '../../lib/languages';
+import { useT } from '../../lib/i18n';
 import { TOPIC_LABELS, type LifeStorySectionKey } from '../../lib/types';
 import { colors, iconSize, radius, spacing, typography } from '../../lib/theme';
 
@@ -39,6 +40,7 @@ export function HandoffSheetScreen() {
   const { current } = useFamily();
   const { memories } = useMemories(current?.family.id ?? null);
   const { sections } = useLifeStory(current?.family.id ?? null);
+  const t = useT();
   const [copied, setCopied] = useState(false);
 
   const name = current?.family.care_recipient_name ?? 'them';
@@ -105,7 +107,7 @@ export function HandoffSheetScreen() {
         <ScreenHeader title={`About ${name}`} />
         <EmptyState
           icon="document-text-outline"
-          title="Nothing to hand over yet"
+          title={t('handoff.empty.title')}
           body={`Write a chapter or two of ${name}'s story, or mark a few memories as always-ask, and this page assembles itself from those.`}
         />
       </Screen>
@@ -116,12 +118,12 @@ export function HandoffSheetScreen() {
     <Screen>
       <ScreenHeader
         title={`About ${name}`}
-        subtitle="For a new carer, a respite stay, or a hospital admission."
+        subtitle={t('handoff.subtitle')}
       />
 
       {anchors.length > 0 && (
         <Card style={styles.section}>
-          <Text style={typography.label}>THE PEOPLE WHO MATTER MOST</Text>
+          <Text style={typography.label}>{t('handoff.anchors')}</Text>
           {anchors.map((a) => (
             <Text key={a.id} style={typography.body}>
               · {a.answer}
