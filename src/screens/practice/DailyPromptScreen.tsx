@@ -12,6 +12,7 @@ import { addMemory } from '../../lib/useMemories';
 import { uploadVoiceNote } from '../../lib/media';
 import { getOrCreateTodaysPrompt, markPromptAnswered, type DailyPrompt } from '../../lib/dailyPrompt';
 import { supabase } from '../../lib/supabase';
+import { useT } from '../../lib/i18n';
 import { colors, iconSize, radius, spacing, typography } from '../../lib/theme';
 import type { PracticeStackParamList } from '../../navigation/types';
 
@@ -19,6 +20,7 @@ type Props = NativeStackScreenProps<PracticeStackParamList, 'DailyPrompt'>;
 
 export function DailyPromptScreen({ navigation }: Props) {
   const { current } = useFamily();
+  const t = useT();
   const [prompt, setPrompt] = useState<DailyPrompt | null>(null);
   const [loading, setLoading] = useState(true);
   const [answer, setAnswer] = useState('');
@@ -48,7 +50,7 @@ export function DailyPromptScreen({ navigation }: Props) {
   const handleSave = async () => {
     if (!current || !prompt) return;
     if (!answer.trim() && !voiceUri) {
-      setError('Record something or write a line — either is plenty.');
+      setError(t('daily.needSomething'));
       return;
     }
     setSaving(true);
@@ -63,7 +65,7 @@ export function DailyPromptScreen({ navigation }: Props) {
         question: prompt.question,
         // A voice-only answer is a perfectly good memory; the text is only a
         // label for the list until somebody types more.
-        answer: answer.trim() || 'Answered out loud — press play to hear it.',
+        answer: answer.trim() || t('daily.spokenAnswer'),
         voicePath,
         voiceTranscript: transcript,
         source: 'daily_prompt',
@@ -84,7 +86,7 @@ export function DailyPromptScreen({ navigation }: Props) {
 
       navigation.goBack();
     } catch (e: any) {
-      setError(e.message ?? 'Could not save that');
+      setError(e.message ?? t('daily.saveFailed'));
       setSaving(false);
     }
   };
@@ -92,7 +94,7 @@ export function DailyPromptScreen({ navigation }: Props) {
   if (loading) {
     return (
       <Screen>
-        <Text style={typography.body}>Loading…</Text>
+        <Text style={typography.body}>{t('common.loading')}</Text>
       </Screen>
     );
   }
@@ -100,7 +102,7 @@ export function DailyPromptScreen({ navigation }: Props) {
   if (!prompt) {
     return (
       <Screen>
-        <Text style={typography.body}>No question today. Try again tomorrow.</Text>
+        <Text style={typography.body}>{t('daily.none')}</Text>
       </Screen>
     );
   }
@@ -109,7 +111,7 @@ export function DailyPromptScreen({ navigation }: Props) {
 
   return (
     <Screen>
-      <Text style={typography.label}>TODAY'S QUESTION</Text>
+      <Text style={typography.label}>{t('daily.eyebrow')}</Text>
       <Card style={styles.questionCard}>
         <Text style={typography.serifLarge}>{prompt.question}</Text>
       </Card>
@@ -118,14 +120,13 @@ export function DailyPromptScreen({ navigation }: Props) {
         <Card style={styles.doneCard}>
           <Ionicons name="checkmark-circle" size={iconSize.lg} color={colors.success} />
           <Text style={[typography.body, styles.doneText]}>
-            You've already answered this one today. Another question comes tomorrow.
+{t('daily.alreadyAnswered')}
           </Text>
         </Card>
       ) : (
         <>
           <Text style={typography.subtext}>
-            Twenty seconds out loud is worth more than a paragraph typed — {name} will hear your
-            actual voice when this comes up in a session.
+{t('daily.body', { name })}
           </Text>
 
           <VoiceRecorder
@@ -139,12 +140,12 @@ export function DailyPromptScreen({ navigation }: Props) {
           />
 
           <TextField
-            label="Or write it down"
-            placeholder="She worked at the mill from fifteen…"
+            label={t('daily.write')}
+            placeholder={t('daily.writePlaceholder')}
             value={answer}
             onChangeText={setAnswer}
             multiline
-            hint="Optional if you've recorded something."
+            hint={t('daily.writeHint')}
           />
 
           {error && (
@@ -154,7 +155,7 @@ export function DailyPromptScreen({ navigation }: Props) {
             </View>
           )}
 
-          <PrimaryButton label="Add to the reel" icon="checkmark" onPress={handleSave} loading={saving} />
+          <PrimaryButton label={t('daily.add')} icon="checkmark" onPress={handleSave} loading={saving} />
         </>
       )}
     </Screen>

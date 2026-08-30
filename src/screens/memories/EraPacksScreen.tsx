@@ -7,6 +7,7 @@ import { ScreenHeader } from '../../components/ScreenHeader';
 import { Card } from '../../components/Card';
 import { useFamily } from '../../state/FamilyContext';
 import { ERA_PACKS } from '../../lib/eraPacks';
+import { useT } from '../../lib/i18n';
 import { colors, iconSize, minTapTarget, radius, spacing, typography } from '../../lib/theme';
 import type { MemoriesStackParamList } from '../../navigation/types';
 
@@ -14,6 +15,7 @@ type Props = NativeStackScreenProps<MemoriesStackParamList, 'EraPacks'>;
 
 export function EraPacksScreen({ navigation }: Props) {
   const { current } = useFamily();
+  const t = useT();
   const [openId, setOpenId] = useState<string | null>(ERA_PACKS[1]?.id ?? null);
 
   const name = current?.family.care_recipient_name ?? 'them';
@@ -21,15 +23,14 @@ export function EraPacksScreen({ navigation }: Props) {
   return (
     <Screen>
       <ScreenHeader
-        title="By decade"
-        subtitle={`Questions about the years ${name} was young — useful when the photographs run out.`}
+        title={t('era.title')}
+        subtitle={t('era.subtitle', { name })}
       />
 
       <Card style={styles.why}>
         <Ionicons name="information-circle-outline" size={iconSize.md} color={colors.primary} />
         <Text style={[typography.subtext, styles.whyText]}>
-          Memory for one's own life peaks around ages ten to thirty, so the decade someone grew up
-          in is far richer ground than last year.
+{t('era.why')}
         </Text>
       </Card>
 
@@ -60,7 +61,7 @@ export function EraPacksScreen({ navigation }: Props) {
                   <Pressable
                     key={prompt.question}
                     accessibilityRole="button"
-                    accessibilityLabel={`Use question: ${prompt.question}`}
+                    accessibilityLabel={t('era.use', { question: prompt.question })}
                     onPress={() =>
                       navigation.navigate('AddMemory', { prefillQuestion: prompt.question })
                     }

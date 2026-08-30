@@ -15,6 +15,7 @@ import { unretireUpdate, retireUpdate } from '../../lib/srt';
 import { formatOccurred, parseLooseDate } from '../../lib/dates';
 import { LANGUAGES } from '../../lib/languages';
 import { Chip } from '../../components/Chip';
+import { useT } from '../../lib/i18n';
 import { colors, iconSize, radius, spacing, typography } from '../../lib/theme';
 import type { MemoriesStackParamList } from '../../navigation/types';
 
@@ -23,6 +24,7 @@ type Props = NativeStackScreenProps<MemoriesStackParamList, 'MemoryDetail'>;
 export function MemoryDetailScreen({ route, navigation }: Props) {
   const { memoryId } = route.params;
   const { current } = useFamily();
+  const t = useT();
   const { memories } = useMemories(current?.family.id ?? null);
   const { nameFor } = useFamilyMembers(current?.family.id ?? null);
 
@@ -55,7 +57,7 @@ export function MemoryDetailScreen({ route, navigation }: Props) {
   if (!memory) {
     return (
       <Screen>
-        <Text style={typography.body}>Loading…</Text>
+        <Text style={typography.body}>{t('common.loading')}</Text>
       </Screen>
     );
   }
@@ -68,7 +70,7 @@ export function MemoryDetailScreen({ route, navigation }: Props) {
     try {
       const parsed = dateText.trim() ? parseLooseDate(dateText) : null;
       if (dateText.trim() && !parsed) {
-        setError('Try a year like 1962, a month like “March 1962”, or “the 70s”.');
+        setError(t('memory.whenInvalid'));
         setSaving(false);
         return;
       }
@@ -82,7 +84,7 @@ export function MemoryDetailScreen({ route, navigation }: Props) {
       });
       navigation.goBack();
     } catch (e: any) {
-      setError(e.message ?? 'Could not save this memory');
+      setError(e.message ?? t('addMemory.saveFailed'));
     }
     setSaving(false);
   };
@@ -97,7 +99,7 @@ export function MemoryDetailScreen({ route, navigation }: Props) {
       await deleteMemory(memory);
       navigation.goBack();
     } catch (e: any) {
-      setError(e.message ?? 'Could not delete this memory');
+      setError(e.message ?? t('memory.deleteFailed'));
       setSaving(false);
     }
   };
@@ -112,10 +114,9 @@ export function MemoryDetailScreen({ route, navigation }: Props) {
         <Card style={[styles.statusCard, styles.restingCard]}>
           <Ionicons name="moon-outline" size={iconSize.md} color={colors.accentStrong} />
           <View style={styles.statusText}>
-            <Text style={typography.bodyStrong}>Resting</Text>
+            <Text style={typography.bodyStrong}>{t('memory.resting.title')}</Text>
             <Text style={typography.caption}>
-              This one stopped being asked after several difficult sessions. It still appears in
-              the album.
+{t('memory.resting.body')}
             </Text>
           </View>
         </Card>
@@ -125,32 +126,32 @@ export function MemoryDetailScreen({ route, navigation }: Props) {
         <Card style={[styles.statusCard, styles.restingCard]}>
           <Ionicons name="leaf-outline" size={iconSize.md} color={colors.accentStrong} />
           <View style={styles.statusText}>
-            <Text style={typography.bodyStrong}>Set aside for now</Text>
-            <Text style={typography.caption}>Marked “not today” during a session.</Text>
+            <Text style={typography.bodyStrong}>{t('memory.paused.title')}</Text>
+            <Text style={typography.caption}>{t('memory.paused.body')}</Text>
           </View>
         </Card>
       )}
 
-      <TextField label="Question" value={question} onChangeText={setQuestion} />
+      <TextField label={t('addMemory.question')} value={question} onChangeText={setQuestion} />
       <TextField
-        label="Answer"
+        label={t('addMemory.answer')}
         value={answer}
         onChangeText={setAnswer}
-        hint="Write it the way you'd say it out loud."
+        hint={t('addMemory.answerHint')}
       />
       <TextField
-        label="When was this?"
+        label={t('memory.when')}
         value={dateText}
         onChangeText={setDateText}
-        placeholder="1962, March 1962, or the 70s"
-        hint="However precisely you remember it — a year on its own is fine."
+        placeholder={t('memory.whenPlaceholder')}
+        hint={t('memory.whenHint')}
       />
-      <TextField label="A note from you" value={note} onChangeText={setNote} />
+      <TextField label={t('memory.noteLabel')} value={note} onChangeText={setNote} />
 
       <View style={styles.languageBlock}>
-        <Text style={typography.subheading}>Language</Text>
+        <Text style={typography.subheading}>{t('memory.languageLabel')}</Text>
         <Text style={typography.caption}>
-          Tap again to clear it. People often return to a first language later on.
+{t('memory.languageHint')}
         </Text>
         <View style={styles.chipRow}>
           {LANGUAGES.map((l) => (
@@ -170,9 +171,11 @@ export function MemoryDetailScreen({ route, navigation }: Props) {
 
       {recordings.length > 0 && (
         <Card style={styles.recordingsCard}>
-          <Text style={typography.label}>IN {recipient.toUpperCase()}'S OWN VOICE</Text>
+          <Text style={typography.label}>
+            {t('elderRec.heading', { name: recipient.toUpperCase() })}
+          </Text>
           <Text style={typography.caption}>
-            Recorded during sessions. This is the part families say they wish they had.
+{t('elderRec.note')}
           </Text>
           {recordings.map((rec) =>
             rec.audio_url ? (
@@ -189,10 +192,9 @@ export function MemoryDetailScreen({ route, navigation }: Props) {
       <Card style={styles.toggleCard}>
         <View style={styles.toggleRow}>
           <View style={styles.toggleText}>
-            <Text style={typography.bodyStrong}>Always ask this one</Text>
+            <Text style={typography.bodyStrong}>{t('memory.anchor')}</Text>
             <Text style={typography.caption}>
-              Anchors — a husband, a daughter, their own name — keep coming round however often
-              they're missed.
+{t('memory.anchorHint')}
             </Text>
           </View>
           <Switch
@@ -210,18 +212,18 @@ export function MemoryDetailScreen({ route, navigation }: Props) {
         </View>
       )}
 
-      <PrimaryButton label="Save changes" onPress={handleSave} loading={saving} />
+      <PrimaryButton label={t('memory.saveChanges')} onPress={handleSave} loading={saving} />
 
       {memory.retired_at ? (
         <PrimaryButton
-          label="Start asking this again"
+          label={t('memory.unretire')}
           icon="refresh-outline"
           variant="secondary"
           onPress={() => updateMemory(memory.id, unretireUpdate()).catch(() => {})}
         />
       ) : (
         <PrimaryButton
-          label="Rest this one"
+          label={t('memory.retire')}
           icon="moon-outline"
           variant="secondary"
           onPress={() => updateMemory(memory.id, retireUpdate()).catch(() => {})}
@@ -229,14 +231,14 @@ export function MemoryDetailScreen({ route, navigation }: Props) {
       )}
 
       <PrimaryButton
-        label={confirmingDelete ? 'Tap again to delete for good' : 'Delete this memory'}
+label={confirmingDelete ? t('memory.deleteConfirm') : t('memory.delete')}
         icon="trash-outline"
         variant="ghost"
         onPress={handleDelete}
       />
       {confirmingDelete && (
         <Text style={[typography.caption, styles.centered]}>
-          The photo and voice note go too. This can't be undone.
+{t('memory.deleteWarning')}
         </Text>
       )}
     </Screen>

@@ -10,6 +10,7 @@ import { useFamily } from '../../state/FamilyContext';
 import { addMemory } from '../../lib/useMemories';
 import { saveElderRecording } from '../../lib/elderRecordings';
 import { supabase } from '../../lib/supabase';
+import { useT } from '../../lib/i18n';
 import { colors, iconSize, radius, spacing, typography } from '../../lib/theme';
 import type { PracticeStackParamList } from '../../navigation/types';
 
@@ -45,6 +46,7 @@ type State = 'ready' | 'recording' | 'saving' | 'saved' | 'failed';
 
 export function GrandchildScreen({ navigation }: Props) {
   const { current } = useFamily();
+  const t = useT();
   const [index, setIndex] = useState(() => Math.floor(Math.random() * KID_QUESTIONS.length));
   const [state, setState] = useState<State>('ready');
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
@@ -92,7 +94,7 @@ export function GrandchildScreen({ navigation }: Props) {
         memberId: current.member.id,
         category: 'identity',
         question,
-        answer: `${name} answered this one out loud.`,
+        answer: t('kid.answeredAloud', { name }),
         source: 'app',
         needsReview: true,
       });
@@ -123,9 +125,9 @@ export function GrandchildScreen({ navigation }: Props) {
   return (
     <Screen>
       <View style={styles.heading}>
-        <Text style={typography.label}>ASK {name.toUpperCase()}</Text>
+        <Text style={typography.label}>{t('kid.eyebrow', { name: name.toUpperCase() })}</Text>
         <Text style={typography.subtext}>
-          Read the question out loud, press the big button, and let them answer.
+{t('kid.body')}
         </Text>
       </View>
 
@@ -136,21 +138,21 @@ export function GrandchildScreen({ navigation }: Props) {
       {state === 'saved' ? (
         <Card style={styles.done}>
           <Ionicons name="checkmark-circle" size={iconSize.xl} color={colors.success} />
-          <Text style={typography.serifLarge}>Saved</Text>
+          <Text style={typography.serifLarge}>{t('kid.saved')}</Text>
           <Text style={[typography.body, styles.centered]}>
-            That's now kept in {name}'s own voice. The whole family can hear it.
+{t('kid.savedBody', { name })}
           </Text>
         </Card>
       ) : (
         <PrimaryButton
           label={
             state === 'recording'
-              ? 'Stop — they finished'
+? t('kid.stop')
               : state === 'saving'
-                ? 'Saving…'
+                ? t('kid.saving')
                 : state === 'failed'
-                  ? "That didn't work — try again"
-                  : 'Start recording'
+                  ? t('kid.failed')
+                  : t('kid.start')
           }
           icon={state === 'recording' ? 'stop' : 'mic'}
           variant={state === 'recording' ? 'success' : 'primary'}
@@ -160,12 +162,12 @@ export function GrandchildScreen({ navigation }: Props) {
       )}
 
       <PrimaryButton
-        label="Ask a different question"
+        label={t('kid.another')}
         icon="shuffle"
         variant="secondary"
         onPress={nextQuestion}
       />
-      <PrimaryButton label="All done" variant="ghost" onPress={() => navigation.goBack()} />
+      <PrimaryButton label={t('kid.allDone')} variant="ghost" onPress={() => navigation.goBack()} />
     </Screen>
   );
 }

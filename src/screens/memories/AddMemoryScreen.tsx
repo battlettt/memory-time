@@ -12,6 +12,7 @@ import { useFamily } from '../../state/FamilyContext';
 import { addMemory } from '../../lib/useMemories';
 import { uploadPhoto, uploadVoiceNote } from '../../lib/media';
 import { LANGUAGES } from '../../lib/languages';
+import { useT } from '../../lib/i18n';
 import { colors, iconSize, radius, spacing, typography } from '../../lib/theme';
 import type { MemoriesStackParamList } from '../../navigation/types';
 import type { MemoryCategory } from '../../lib/types';
@@ -20,6 +21,7 @@ type Props = NativeStackScreenProps<MemoriesStackParamList, 'AddMemory'>;
 
 export function AddMemoryScreen({ route, navigation }: Props) {
   const { current } = useFamily();
+  const t = useT();
   const [question, setQuestion] = useState(route.params?.prefillQuestion ?? '');
   const [answer, setAnswer] = useState('');
   const [note, setNote] = useState('');
@@ -36,14 +38,14 @@ export function AddMemoryScreen({ route, navigation }: Props) {
   // The labels use the care recipient's actual name — "About Rosa herself"
   // reads far more naturally than a generic placeholder.
   const categories: { key: MemoryCategory; label: string }[] = [
-    { key: 'relationship', label: 'Who someone is to them' },
-    { key: 'identity', label: `About ${name}` },
-    { key: 'event', label: 'A moment or event' },
+    { key: 'relationship', label: t('addMemory.kind.relationship') },
+    { key: 'identity', label: t('addMemory.kind.identity', { name }) },
+    { key: 'event', label: t('addMemory.kind.event') },
   ];
 
   const handleSave = async () => {
     if (!current || !question.trim() || !answer.trim()) {
-      setError('A question and an answer are both needed to practise with.');
+      setError(t('addMemory.needBoth'));
       return;
     }
     setSaving(true);
@@ -67,17 +69,17 @@ export function AddMemoryScreen({ route, navigation }: Props) {
       });
       navigation.navigate('MemoriesHome');
     } catch (e: any) {
-      setError(e.message ?? 'Could not save this memory');
+      setError(e.message ?? t('addMemory.saveFailed'));
     }
     setSaving(false);
   };
 
   return (
     <Screen>
-      <Text style={typography.title}>Add a memory</Text>
+      <Text style={typography.title}>{t('addMemory.title')}</Text>
 
       <View style={styles.section}>
-        <Text style={typography.label}>WHAT KIND OF MEMORY</Text>
+        <Text style={typography.label}>{t('addMemory.kind')}</Text>
         <View style={styles.categoryRow}>
           {categories.map((c) => (
             <Chip
@@ -91,27 +93,26 @@ export function AddMemoryScreen({ route, navigation }: Props) {
       </View>
 
       <View style={styles.section}>
-        <Text style={typography.label}>THE QUESTION AND ANSWER</Text>
+        <Text style={typography.label}>{t('addMemory.qa')}</Text>
         <TextField
-          label="Question"
-          placeholder="Who is this in the photo?"
+          label={t('addMemory.question')}
+          placeholder={t('addMemory.questionPlaceholder')}
           value={question}
           onChangeText={setQuestion}
         />
         <TextField
-          label="Answer"
-          placeholder="That's Sarah, your granddaughter"
-          hint="Write it the way you'd say it out loud."
+          label={t('addMemory.answer')}
+          placeholder={t('addMemory.answerPlaceholder')}
+          hint={t('addMemory.answerHint')}
           value={answer}
           onChangeText={setAnswer}
         />
       </View>
 
       <View style={styles.section}>
-        <Text style={typography.label}>LANGUAGE</Text>
+        <Text style={typography.label}>{t('addMemory.language')}</Text>
         <Text style={typography.caption}>
-          Only if this one is best said in another language — people often
-          return to their first one.
+{t('addMemory.languageHint')}
         </Text>
         <View style={styles.categoryRow}>
           {LANGUAGES.map((l) => (
@@ -126,7 +127,7 @@ export function AddMemoryScreen({ route, navigation }: Props) {
       </View>
 
       <View style={styles.section}>
-        <Text style={typography.label}>PHOTO AND VOICE</Text>
+        <Text style={typography.label}>{t('addMemory.media')}</Text>
         <PhotoPicker uri={photoUri} onChange={setPhotoUri} />
         <VoiceRecorder
           uri={voiceUri}
@@ -140,10 +141,10 @@ export function AddMemoryScreen({ route, navigation }: Props) {
       </View>
 
       <View style={styles.section}>
-        <Text style={typography.label}>A NOTE FROM YOU</Text>
+        <Text style={typography.label}>{t('addMemory.note')}</Text>
         <TextField
-          placeholder="I love this one!"
-          hint="Optional — shown alongside the answer during practice."
+          placeholder={t('addMemory.notePlaceholder')}
+          hint={t('addMemory.noteHint')}
           value={note}
           onChangeText={setNote}
         />
@@ -155,7 +156,7 @@ export function AddMemoryScreen({ route, navigation }: Props) {
           <Text style={styles.errorText}>{error}</Text>
         </View>
       )}
-      <PrimaryButton label="Save memory" onPress={handleSave} loading={saving} />
+      <PrimaryButton label={t('addMemory.save')} onPress={handleSave} loading={saving} />
     </Screen>
   );
 }
