@@ -43,3 +43,6 @@ yarn-error.*
 
 # stray R console history (not part of this project)
 .Rhistory
+
+# supabase cli scratch
+supabase/.temp/
